@@ -102,20 +102,195 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* ---------- Movimento ---------- */
+/* Tudo aqui só roda quando o celular não pediu para reduzir animações. */
+
 @media (prefers-reduced-motion: no-preference) {
+  :root {
+    --spring: cubic-bezier(0.34, 1.4, 0.5, 1);
+    --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  /* Botões afundam um pouco ao toque. */
   .pop {
-    transition: transform 160ms ease-out, background-color 200ms ease-out, color 200ms;
+    transition: transform 180ms var(--spring), background-color 220ms ease-out, color 220ms, box-shadow 220ms;
   }
   .pop:active {
     transform: scale(0.94);
   }
+
+  /* Bloco da tarefa: a cor de "comigo" entra suave. */
+  .task {
+    transition: background-color 280ms ease-out, box-shadow 280ms ease-out, opacity 280ms;
+  }
+
+  /* Círculo de feito: enche com um pulo e o check se desenha. */
+  .done-pop {
+    animation: done-pop 420ms var(--spring);
+  }
+  @keyframes done-pop {
+    0% {
+      transform: scale(0.6);
+    }
+    60% {
+      transform: scale(1.12);
+    }
+  }
+  .done-ring {
+    animation: done-ring 520ms var(--ease-out) forwards;
+  }
+  @keyframes done-ring {
+    from {
+      opacity: 0.55;
+      transform: scale(0.8);
+    }
+    to {
+      opacity: 0;
+      transform: scale(1.7);
+    }
+  }
+  .check-draw path {
+    stroke-dasharray: 22;
+    stroke-dashoffset: 22;
+    animation: check-draw 320ms 90ms var(--ease-out) forwards;
+  }
+  @keyframes check-draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  /* Pílula de assumir troca de estado com um pulinho. */
+  .chip-in {
+    animation: chip-in 320ms var(--spring);
+  }
+  @keyframes chip-in {
+    from {
+      transform: scale(0.82);
+      opacity: 0.4;
+    }
+  }
+
+  /* Entrada da tela Hoje, só na primeira abertura. */
+  .enter {
+    animation: enter 520ms var(--ease-out) both;
+    animation-delay: calc(var(--i, 0) * 45ms);
+  }
+  @keyframes enter {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+  }
+
+  /* Cartões que aparecem (sugestão, aviso). */
+  .rise {
+    animation: rise 380ms var(--spring);
+  }
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(10px) scale(0.97);
+    }
+  }
+
+  /* Número do ajuste de limite troca rolando. */
+  .tick-up {
+    animation: tick-up 260ms var(--ease-out);
+  }
+  .tick-down {
+    animation: tick-down 260ms var(--ease-out);
+  }
+  @keyframes tick-up {
+    from {
+      opacity: 0;
+      transform: translateY(40%);
+    }
+  }
+  @keyframes tick-down {
+    from {
+      opacity: 0;
+      transform: translateY(-40%);
+    }
+  }
+
+  /* Estrela do "tudo feito". */
+  .twinkle {
+    animation: twinkle 2.4s ease-in-out infinite;
+    transform-origin: center;
+  }
+  @keyframes twinkle {
+    0%,
+    100% {
+      transform: scale(1) rotate(0deg);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(0.7) rotate(45deg);
+      opacity: 0.6;
+    }
+  }
+
+  /* Folha de edição. */
   .sheet-in {
-    animation: sheet 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    animation: sheet 300ms var(--ease-out);
+  }
+  .sheet-in::backdrop {
+    animation: fade 300ms ease-out;
   }
   @keyframes sheet {
     from {
-      transform: translateY(32px);
+      transform: translateY(40px);
       opacity: 0;
     }
+  }
+  @keyframes fade {
+    from {
+      opacity: 0;
+    }
+  }
+
+  /* View Transitions: listas se rearrumam, abas trocam. */
+  ::view-transition-group(*) {
+    animation-duration: 340ms;
+    animation-timing-function: var(--ease-out);
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 200ms;
+  }
+  /* Tarefa que sai da tela (adiada) desliza para a direita. */
+  ::view-transition-old(*):only-child {
+    animation: vt-out 260ms var(--ease-out) both;
+  }
+  ::view-transition-new(*):only-child {
+    animation: vt-in 300ms var(--ease-out) both;
+  }
+  @keyframes vt-out {
+    to {
+      opacity: 0;
+      transform: translateX(24%);
+    }
+  }
+  @keyframes vt-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+
+  /* Troca de aba: só a navegação se mexe, a página faz um fade. */
+  .tab-switch main * {
+    view-transition-name: none !important;
+  }
+
+  /* Troca de tema: só o círculo, sem o fade padrão. */
+  .theme-switch * {
+    view-transition-name: none !important;
+  }
+  .theme-switch::view-transition-old(root),
+  .theme-switch::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
   }
 }

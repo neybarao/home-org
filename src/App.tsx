@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Icon } from './components/Icon'
 import { Avatar } from './components/ui'
 import { loadMe, saveMe } from './data/repo'
+import { haptic, withTransition } from './lib/motion'
 import { todayISO } from './lib/dates'
 import { useTheme } from './lib/theme'
 import { PEOPLE, type Person } from './lib/types'
@@ -63,7 +64,12 @@ export default function App() {
             return (
               <button
                 key={id}
-                onClick={() => setTab(id)}
+                onClick={() => {
+                  if (active) return
+                  haptic()
+                  withTransition(() => setTab(id), 'tab-switch')
+                }}
+                style={{ viewTransitionName: `nav-${id}` }}
                 aria-current={active ? 'page' : undefined}
                 className={`pop flex h-14 items-center justify-center gap-2 rounded-full ${
                   active ? 'bg-solid px-5 font-semibold text-on-solid' : 'w-14 bg-white/70 text-ink dark:bg-white/[0.07]'

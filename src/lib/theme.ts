@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { revealTheme } from './motion'
 
 export type ThemeChoice = 'system' | 'light' | 'dark'
 
@@ -37,7 +38,10 @@ export function useTheme(): [ThemeChoice, (c: ThemeChoice) => void] {
     } catch {
       /* ignora */
     }
-    setChoice(c)
+    revealTheme(() => {
+      applyTheme(c)
+      setChoice(c)
+    })
   }
   return [choice, set]
 }

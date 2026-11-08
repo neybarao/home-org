@@ -1,4 +1,6 @@
+import { useRef } from 'react'
 import { Avatar, Card, Segmented, SectionTitle, Switch } from '../components/ui'
+import { haptic, withTransition } from '../lib/motion'
 import { actions, useHome } from '../data/store'
 import type { ThemeChoice } from '../lib/theme'
 import { PEOPLE, type Person } from '../lib/types'
@@ -16,6 +18,13 @@ export function SettingsScreen({
 }) {
   const { settings } = useHome()
   const limit = settings.dailyLimit
+  const direction = useRef<'up' | 'down' | null>(null)
+  const change = (next: number) => {
+    if (next === limit) return
+    direction.current = next > limit ? 'up' : 'down'
+    haptic()
+    actions.setSettings({ dailyLimit: next })
+  }
   const step = 'pop glass grid size-12 place-items-center rounded-full text-2xl font-medium'
 
   return (
@@ -26,6 +35,7 @@ export function SettingsScreen({
         <SectionTitle>Aparência</SectionTitle>
         <Segmented
           label="Tema"
+          slide={false}
           value={theme}
           onChange={onChangeTheme}
           options={[
@@ -42,13 +52,15 @@ export function SettingsScreen({
           <p className="font-semibold">Tarefas por pessoa, por dia</p>
           <p className="text-[13px] text-muted">Ainda em aberto. Ajustem conforme forem usando.</p>
           <div className="mt-4 flex items-center gap-3">
-            <button onClick={() => actions.setSettings({ dailyLimit: Math.max(1, limit - 1) })} aria-label="Diminuir" className={step}>
+            <button onClick={() => change(Math.max(1, limit - 1))} aria-label="Diminuir" className={step}>
               −
             </button>
-            <span className="tabular w-12 text-center text-[36px] font-bold tracking-tight" aria-live="polite">
-              {limit}
+            <span className="tabular w-12 overflow-hidden text-center text-[36px] font-bold tracking-tight" aria-live="polite">
+              <span key={limit} className={`block ${direction.current ? `tick-${direction.current}` : ''}`}>
+                {limit}
+              </span>
             </span>
-            <button onClick={() => actions.setSettings({ dailyLimit: Math.min(12, limit + 1) })} aria-label="Aumentar" className={step}>
+            <button onClick={() => change(Math.min(12, limit + 1))} aria-label="Aumentar" className={step}>
               +
             </button>
             <span className="ml-1 text-[13px] text-muted">{limit * 2} no total, com os dois</span>
@@ -71,7 +83,10 @@ export function SettingsScreen({
             <button
               key={p}
               aria-pressed={me === p}
-              onClick={() => onChangeMe(p)}
+              onClick={() => {
+                haptic()
+                withTransition(() => onChangeMe(p))
+              }}
               className={`pop flex items-center gap-3 rounded-[24px] p-2.5 pr-4 font-semibold ${me === p ? 'bg-solid text-on-solid' : 'glass'}`}
             >
               <Avatar person={p} size={40} />

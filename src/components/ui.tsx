@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react'
+import { useId, type ReactNode } from 'react'
+import { vtName, withTransition } from '../lib/motion'
 import { PEOPLE, type Person } from '../lib/types'
 
 export function Switch({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label?: string }) {
@@ -42,14 +43,20 @@ export function Segmented<T extends string | number>({
   onChange,
   columns,
   label,
+  slide = true,
 }: {
   options: readonly (readonly [T, string])[]
   value: T | T[]
   onChange: (v: T) => void
   columns?: number
   label?: string
+  /** Indicador desliza até a opção escolhida. Só em escolha única. */
+  slide?: boolean
 }) {
-  const selected = (v: T) => (Array.isArray(value) ? value.includes(v) : value === v)
+  const id = useId()
+  const multi = Array.isArray(value)
+  const selected = (v: T) => (multi ? value.includes(v) : value === v)
+  const sliding = slide && !multi
   return (
     <div
       role="group"
@@ -62,14 +69,17 @@ export function Segmented<T extends string | number>({
           key={String(v)}
           type="button"
           aria-pressed={selected(v)}
-          onClick={() => onChange(v)}
-          className={`pop h-11 rounded-[18px] px-1 text-[15px] ${
-            selected(v)
-              ? 'bg-white font-semibold text-ink shadow-[0_1px_3px_rgb(0_0_0/0.1)] dark:bg-white/15'
-              : 'text-muted'
-          }`}
+          onClick={() => (sliding ? withTransition(() => onChange(v)) : onChange(v))}
+          className={`pop relative h-11 rounded-[18px] px-1 text-[15px] ${selected(v) ? 'font-semibold text-ink' : 'text-muted'}`}
         >
-          {text}
+          {selected(v) && (
+            <span
+              aria-hidden
+              className="absolute inset-0 rounded-[18px] bg-white shadow-[0_1px_3px_rgb(0_0_0/0.1)] dark:bg-white/15"
+              style={sliding ? { viewTransitionName: vtName('seg', id) } : undefined}
+            />
+          )}
+          <span className="relative">{text}</span>
         </button>
       ))}
     </div>
