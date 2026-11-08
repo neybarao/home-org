@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
+import { Icon } from './components/Icon'
+import { Avatar } from './components/ui'
 import { loadMe, saveMe } from './data/repo'
 import { todayISO } from './lib/dates'
-import type { Person } from './lib/types'
-import { PEOPLE } from './lib/types'
-import { TodayScreen } from './screens/TodayScreen'
+import { useTheme } from './lib/theme'
+import { PEOPLE, type Person } from './lib/types'
 import { HouseScreen } from './screens/HouseScreen'
 import { SettingsScreen } from './screens/SettingsScreen'
-import { Icon } from './components/Icon'
+import { TodayScreen } from './screens/TodayScreen'
 
 type Tab = 'hoje' | 'casa' | 'ajustes'
 
@@ -25,9 +26,16 @@ function useToday() {
   return today
 }
 
+const TABS = [
+  ['hoje', 'Hoje', 'today'],
+  ['casa', 'Tarefas', 'house'],
+  ['ajustes', 'Ajustes', 'settings'],
+] as const
+
 export default function App() {
   const [me, setMe] = useState<Person | null>(loadMe)
   const [tab, setTab] = useState<Tab>('hoje')
+  const [theme, setTheme] = useTheme()
   const today = useToday()
 
   const choose = (p: Person) => {
@@ -39,34 +47,33 @@ export default function App() {
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-lg flex-col">
-      <main className="flex-1 px-4 pt-[max(env(safe-area-inset-top),1.25rem)] pb-28">
+      <main className="flex-1 px-4 pt-[max(env(safe-area-inset-top),1.25rem)] pb-32">
         {tab === 'hoje' && <TodayScreen me={me} today={today} />}
         {tab === 'casa' && <HouseScreen />}
-        {tab === 'ajustes' && <SettingsScreen me={me} onChangeMe={choose} />}
+        {tab === 'ajustes' && <SettingsScreen me={me} onChangeMe={choose} theme={theme} onChangeTheme={setTheme} />}
       </main>
 
       <nav
         aria-label="Seções"
-        className="fixed inset-x-0 bottom-0 border-t border-line bg-bg/95 backdrop-blur pb-[env(safe-area-inset-bottom)]"
+        className="fixed inset-x-0 bottom-0 flex justify-center bg-gradient-to-t from-bg via-bg/80 to-transparent pt-8 pb-[max(env(safe-area-inset-bottom),1rem)]"
       >
-        <div className="mx-auto grid max-w-lg grid-cols-3">
-          {(
-            [
-              ['hoje', 'Hoje', 'today'],
-              ['casa', 'Tarefas da casa', 'house'],
-              ['ajustes', 'Ajustes', 'settings'],
-            ] as const
-          ).map(([id, label, icon]) => (
-            <button
-              key={id}
-              onClick={() => setTab(id)}
-              aria-current={tab === id ? 'page' : undefined}
-              className={`flex flex-col items-center gap-1 py-2.5 text-[13px] ${tab === id ? 'text-ink font-bold' : 'text-muted'}`}
-            >
-              <Icon name={icon} filled={tab === id} />
-              {label}
-            </button>
-          ))}
+        <div className="glass flex gap-1.5 rounded-full !bg-[#ecebe8]/85 p-1.5 dark:!bg-[#232427]/90">
+          {TABS.map(([id, label, icon]) => {
+            const active = tab === id
+            return (
+              <button
+                key={id}
+                onClick={() => setTab(id)}
+                aria-current={active ? 'page' : undefined}
+                className={`pop flex h-14 items-center justify-center gap-2 rounded-full ${
+                  active ? 'bg-solid px-5 font-semibold text-on-solid' : 'w-14 bg-white/70 text-ink dark:bg-white/[0.07]'
+                }`}
+              >
+                <Icon name={icon} />
+                <span className={active ? '' : 'sr-only'}>{label}</span>
+              </button>
+            )
+          })}
         </div>
       </nav>
     </div>
@@ -75,23 +82,14 @@ export default function App() {
 
 function WhoAreYou({ onChoose }: { onChoose: (p: Person) => void }) {
   return (
-    <div className="mx-auto flex min-h-dvh max-w-lg flex-col justify-center px-6">
-      <h1 className="font-display text-4xl font-extrabold leading-tight [font-stretch:85%]">Quem está usando este celular?</h1>
-      <p className="mt-3 text-muted">Assim o app sabe de quem é cada tarefa que você assumir. Dá pra trocar depois em Ajustes.</p>
-      <div className="mt-8 grid gap-3">
+    <div className="mx-auto flex min-h-dvh max-w-lg flex-col justify-end px-5 pb-12">
+      <h1 className="text-[2.75rem] font-extrabold leading-[1.02] tracking-[-0.035em]">Quem está usando este celular?</h1>
+      <p className="mt-3 text-[17px] text-muted">Assim o app sabe de quem é cada tarefa que você assumir. Dá pra trocar depois em Ajustes.</p>
+      <div className="mt-8 grid grid-cols-2 gap-3">
         {(Object.keys(PEOPLE) as Person[]).map((p) => (
-          <button
-            key={p}
-            onClick={() => onChoose(p)}
-            className="pop flex items-center gap-4 rounded-2xl bg-surface p-4 text-left text-lg font-bold shadow-[0_1px_0_var(--line)]"
-          >
-            <span
-              className="grid size-11 place-items-center rounded-full font-display text-xl text-on-person"
-              style={{ background: `var(--${p})` }}
-            >
-              {PEOPLE[p].initial}
-            </span>
-            {PEOPLE[p].name}
+          <button key={p} onClick={() => onChoose(p)} className="pop glass flex aspect-[1/1.05] flex-col justify-between rounded-[28px] p-4 text-left">
+            <Avatar person={p} size={52} />
+            <span className="text-xl font-semibold">{PEOPLE[p].name}</span>
           </button>
         ))}
       </div>

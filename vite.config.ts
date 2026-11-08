@@ -17,8 +17,8 @@ export default defineConfig({
         short_name: 'Casa',
         description: 'Tarefas da casa divididas ao longo da semana.',
         lang: 'pt-BR',
-        theme_color: '#F2F4EE',
-        background_color: '#F2F4EE',
+        theme_color: '#e6e5e2',
+        background_color: '#e6e5e2',
         display: 'standalone',
         start_url: '/home-org/',
         scope: '/home-org/',
@@ -30,17 +30,6 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'google-fonts',
-              expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-        ],
       },
     }),
   ],

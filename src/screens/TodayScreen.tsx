@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react'
+import { Icon } from '../components/Icon'
 import { TaskRow } from '../components/TaskRow'
+import { Avatar, Card, SectionTitle, Switch } from '../components/ui'
 import { actions, useHome } from '../data/store'
 import { WEEKDAYS, longDate, relativeDay, weekday, type ISODate } from '../lib/dates'
 import { dayView, suggestRedistribution, type DayItem } from '../lib/schedule'
 import { PEOPLE, type Person } from '../lib/types'
 
-const SOLO_KEY = 'home-org:solo'
-
+/** Um sim/não que vale só para o dia de hoje neste aparelho. */
 function useDailyFlag(key: string, today: ISODate): [boolean, (v: boolean) => void] {
   const read = () => {
     try {
@@ -35,7 +36,7 @@ function useDailyFlag(key: string, today: ISODate): [boolean, (v: boolean) => vo
 
 export function TodayScreen({ me, today }: { me: Person; today: ISODate }) {
   const data = useHome()
-  const [solo, setSolo] = useDailyFlag(SOLO_KEY, today)
+  const [solo, setSolo] = useDailyFlag('home-org:solo', today)
   const [dismissed, setDismissed] = useDailyFlag('home-org:dismissed', today)
   const [justMoved, setJustMoved] = useState<number | null>(null)
 
@@ -51,61 +52,60 @@ export function TodayScreen({ me, today }: { me: Person; today: ISODate }) {
 
   return (
     <div>
-      <header className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="font-display text-[3.25rem] font-extrabold leading-[0.95] tracking-tight [font-stretch:80%]">
-            {WEEKDAYS[weekday(today)]}
-          </h1>
-          <p className="mt-1.5 text-muted">{longDate(today)}</p>
-        </div>
-        <span
-          className="mt-1 grid size-10 place-items-center rounded-full font-display text-lg font-bold text-on-person"
-          style={{ background: `var(--${me})` }}
-          aria-label={`Usando como ${PEOPLE[me].name}`}
-        >
-          {PEOPLE[me].initial}
+      <header className="flex items-center justify-between">
+        <span className="rounded-full p-1 ring-1 ring-white/70 dark:ring-white/10" aria-label={`Usando como ${PEOPLE[me].name}`}>
+          <Avatar person={me} size={48} />
         </span>
+        <span className="glass rounded-full px-4 py-2.5 text-[14px] font-medium">{longDate(today)}</span>
       </header>
 
-      {data.settings.showSummary && <DayRibbon items={[...regularToday, ...overdue]} />}
+      <h1 className="mt-6 text-[4.25rem] leading-[0.9] font-extrabold tracking-[-0.05em] text-ink/85">{WEEKDAYS[weekday(today)]}</h1>
 
-      <label className="mt-6 flex items-center justify-between gap-4 rounded-2xl bg-surface px-4 py-3">
-        <span>
-          <span className="block font-bold">Só um de nós hoje</span>
-          <span className="block text-[14px] text-muted">O app sugere o que é prioridade e reorganiza o resto.</span>
+      <label className="glass mt-6 flex items-center gap-3 rounded-full py-2 pr-2.5 pl-2">
+        <span className="grid size-12 shrink-0 place-items-center rounded-full bg-white/90 dark:bg-white/10">
+          <Icon name="solo" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[13px] text-muted">{solo ? 'Prioridades primeiro, o resto vai pra frente' : 'Hoje os dois fazem'}</span>
+          <span className="block font-semibold">Só um de nós hoje</span>
         </span>
         <Switch checked={solo} onChange={setSolo} />
       </label>
 
+      {data.settings.showSummary && <Summary items={[...regularToday, ...overdue]} />}
+
       {justMoved !== null && (
-        <p role="status" className="mt-4 rounded-2xl bg-surface px-4 py-3 text-[15px]">
-          {justMoved === 1 ? '1 tarefa foi reorganizada.' : `${justMoved} tarefas foram reorganizadas.`}{' '}
-          <button className="font-bold underline" onClick={() => setJustMoved(null)}>
+        <p role="status" className="glass mt-3 flex items-center justify-between rounded-[22px] px-4 py-3 text-[15px]">
+          {justMoved === 1 ? '1 tarefa foi reorganizada.' : `${justMoved} tarefas foram reorganizadas.`}
+          <button className="font-semibold underline underline-offset-4" onClick={() => setJustMoved(null)}>
             Ok
           </button>
         </p>
       )}
 
       {suggestion && (!dismissed || solo) && (
-        <section className="mt-4 rounded-2xl border-2 border-late/40 bg-late-soft p-4" aria-labelledby="sug-title">
-          <h2 id="sug-title" className="font-display text-xl font-bold [font-stretch:90%]">
+        <section aria-labelledby="sug-title" className="mt-3 rounded-[28px] bg-mine p-5 text-on-mine dark:border dark:border-accent/40">
+          <span className="grid size-11 place-items-center rounded-full bg-black/10 dark:bg-accent dark:text-on-accent">
+            <Icon name="swap" />
+          </span>
+          <h2 id="sug-title" className="mt-4 text-[22px] leading-tight font-bold tracking-[-0.02em]">
             Tem mais tarefa do que o combinado
           </h2>
-          <p className="mt-1 text-[15px] leading-snug">
-            São {suggestion.pending} tarefas para {suggestion.capacity} {solo ? 'de uma pessoa' : 'dos dois'}. A sugestão é fazer as mais
-            importantes hoje e passar estas pra frente:
+          <p className="mt-1.5 text-[15px] leading-snug opacity-75">
+            São {suggestion.pending} tarefas para {suggestion.capacity} {solo ? 'de uma pessoa' : 'dos dois'}. A sugestão é fazer as mais importantes hoje e
+            passar estas pra frente:
           </p>
-          <ul className="mt-3 space-y-1.5 text-[15px]">
+          <ul className="mt-3 divide-y divide-black/10 text-[15px] dark:divide-white/10">
             {suggestion.moves.map((m) => (
-              <li key={m.key} className="flex justify-between gap-3">
+              <li key={m.key} className="flex justify-between gap-3 py-2">
                 <span className="min-w-0 truncate">{m.item.task.title}</span>
-                <span className="shrink-0 font-bold">{relativeDay(m.to, today)}</span>
+                <span className="shrink-0 font-semibold">{relativeDay(m.to, today)}</span>
               </li>
             ))}
           </ul>
           <div className="mt-4 flex gap-2">
             <button
-              className="pop h-11 flex-1 rounded-full bg-ink font-bold text-bg"
+              className="pop h-12 flex-1 rounded-full bg-solid font-semibold text-on-solid"
               onClick={() => {
                 actions.applyMoves(suggestion.moves)
                 setJustMoved(suggestion.moves.length)
@@ -114,7 +114,7 @@ export function TodayScreen({ me, today }: { me: Person; today: ISODate }) {
               Reorganizar assim
             </button>
             {!solo && (
-              <button className="pop h-11 rounded-full px-4 font-bold" onClick={() => setDismissed(true)}>
+              <button className="pop h-12 rounded-full px-4 font-semibold" onClick={() => setDismissed(true)}>
                 Agora não
               </button>
             )}
@@ -123,93 +123,67 @@ export function TodayScreen({ me, today }: { me: Person; today: ISODate }) {
       )}
 
       {overdue.length > 0 && (
-        <Section title="Ficou pra trás" count={overdue.length} tone="late">
+        <TaskSection title="Ficou pra trás" count={overdue.length} tone="late">
           {overdue.map((i) => (
             <TaskRow key={i.occ.key} item={i} me={me} today={today} />
           ))}
-        </Section>
+        </TaskSection>
       )}
 
-      <Section title="Pra hoje" count={pendingToday.length}>
+      <TaskSection title="Pra hoje" count={pendingToday.length}>
         {pendingToday.map((i) => (
           <TaskRow key={i.occ.key} item={i} me={me} today={today} />
         ))}
-        {nothingLeft && <li className="py-4 text-muted">Tudo feito por hoje. Aproveitem o resto do dia.</li>}
+        {nothingLeft && (
+          <li className="glass rounded-[26px] px-5 py-5">
+            <p className="font-semibold">Tudo feito por hoje.</p>
+            <p className="text-muted">Aproveitem o resto do dia.</p>
+          </li>
+        )}
         {doneToday.map((i) => (
           <TaskRow key={i.occ.key} item={i} me={me} today={today} />
         ))}
-      </Section>
+      </TaskSection>
 
       {special.length > 0 && (
-        <Section title="Tarefa especial" hint="Leva mais tempo, fica fora do limite do dia.">
+        <TaskSection title="Tarefa especial" hint="Leva mais tempo, fica fora do limite do dia.">
           {special.map((i) => (
             <TaskRow key={i.occ.key} item={i} me={me} today={today} />
           ))}
-        </Section>
+        </TaskSection>
       )}
     </div>
   )
 }
 
-function Section({
-  title,
-  count,
-  hint,
-  tone,
-  children,
-}: {
-  title: string
-  count?: number
-  hint?: string
-  tone?: 'late'
-  children: React.ReactNode
-}) {
+function TaskSection({ title, count, hint, tone, children }: { title: string; count?: number; hint?: string; tone?: 'late'; children: React.ReactNode }) {
   return (
     <section className="mt-8">
-      <h2 className={`flex items-baseline gap-2 font-display text-2xl font-bold [font-stretch:90%] ${tone === 'late' ? 'text-late' : ''}`}>
+      <SectionTitle count={count} tone={tone}>
         {title}
-        {count !== undefined && count > 0 && <span className="tabular font-sans text-base font-normal text-muted">{count}</span>}
-      </h2>
-      {hint && <p className="text-[14px] text-muted">{hint}</p>}
-      <ul className="mt-2 divide-y divide-line">{children}</ul>
+      </SectionTitle>
+      {hint && <p className="-mt-1.5 mb-2 px-1 text-[13px] text-muted">{hint}</p>}
+      <ul className="space-y-2">{children}</ul>
     </section>
   )
 }
 
-/** Uma marca por tarefa do dia, preenchida com a cor de quem fez. */
-function DayRibbon({ items }: { items: DayItem[] }) {
+/** Quanto do dia já foi feito, e por quem. */
+function Summary({ items }: { items: DayItem[] }) {
   const done = items.filter((i) => i.occ.doneBy)
-  const byPerson = (p: Person) => done.filter((i) => i.occ.doneBy === p).length
+  const count = (p: Person) => done.filter((i) => i.occ.doneBy === p).length
   return (
-    <div className="mt-5">
-      <div className="flex flex-wrap gap-1" aria-hidden>
-        {[...done, ...items.filter((i) => !i.occ.doneBy)].map((i) => (
-          <span
-            key={i.occ.key}
-            className="h-2.5 w-5 rounded-full"
-            style={{ background: i.occ.doneBy ? `var(--${i.occ.doneBy})` : 'var(--line)' }}
-          />
-        ))}
-      </div>
-      <p className="tabular mt-2 text-[14px] text-muted">
-        {done.length} de {items.length} feitas. Ney fez {byPerson('ney')}, Cleide fez {byPerson('cleide')}.
+    <div className="mt-3 grid grid-cols-2 gap-2">
+      {(['ney', 'cleide'] as Person[]).map((p) => (
+        <Card key={p} className="p-4">
+          <Avatar person={p} size={36} />
+          <p className="tabular mt-6 text-[28px] leading-none font-bold">{count(p)}</p>
+          <p className="mt-1 text-[13px] text-muted">feitas por {PEOPLE[p].name}</p>
+        </Card>
+      ))}
+      <p className="tabular col-span-2 px-1 text-[13px] text-muted">
+        {done.length} de {items.length} tarefas do dia feitas.
       </p>
     </div>
-  )
-}
-
-export function Switch({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <span className="relative inline-flex shrink-0">
-      <input
-        type="checkbox"
-        role="switch"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="peer absolute inset-0 z-10 cursor-pointer opacity-0"
-      />
-      <span className="h-7 w-12 rounded-full bg-line transition-colors peer-checked:bg-forest peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ink" />
-      <span className="pointer-events-none absolute top-1 left-1 size-5 rounded-full bg-surface shadow transition-transform peer-checked:translate-x-5" />
-    </span>
   )
 }

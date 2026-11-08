@@ -3,18 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#F2F4EE" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#141A17" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#e6e5e2" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <link rel="icon" type="image/svg+xml" href="/home-org/favicon.svg" />
     <link rel="apple-touch-icon" href="/home-org/icon-192.png" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,500..800&display=swap"
-      rel="stylesheet"
-    />
+    <script>
+      // Aplica o tema antes da primeira pintura, para não piscar.
+      try {
+        var c = localStorage.getItem('home-org:theme')
+        var dark = c === 'dark' || (c !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+      } catch (e) {}
+    </script>
     <title>Casa em dia</title>
   </head>
   <body>
