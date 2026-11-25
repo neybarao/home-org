@@ -1,4 +1,4 @@
-# Casa em dia
+# Dia
 
 PWA para organizar as tarefas da casa entre duas pessoas, em pedaços pequenos ao longo da semana, para o fim de semana ficar livre.
 

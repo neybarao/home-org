@@ -13,8 +13,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.png', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Casa em dia',
-        short_name: 'Casa',
+        name: 'Dia',
+        short_name: 'Dia',
         description: 'Tarefas da casa divididas ao longo da semana.',
         lang: 'pt-BR',
         theme_color: '#eee9df',
