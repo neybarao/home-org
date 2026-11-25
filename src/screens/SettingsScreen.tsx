@@ -29,7 +29,7 @@ export function SettingsScreen({
 
   return (
     <div>
-      <h1 className="text-[2.75rem] leading-none font-extrabold tracking-[-0.045em] text-ink/85">Ajustes</h1>
+      <h1 className="text-[2.125rem] leading-none font-light tracking-[-0.03em] text-ink">Ajustes</h1>
 
       <section className="mt-7">
         <SectionTitle>Aparência</SectionTitle>
@@ -55,7 +55,7 @@ export function SettingsScreen({
             <button onClick={() => change(Math.max(1, limit - 1))} aria-label="Diminuir" className={step}>
               −
             </button>
-            <span className="tabular w-12 overflow-hidden text-center text-[36px] font-bold tracking-tight" aria-live="polite">
+            <span className="tabular w-12 overflow-hidden text-center text-[36px] font-light tracking-tight" aria-live="polite">
               <span key={limit} className={`block ${direction.current ? `tick-${direction.current}` : ''}`}>
                 {limit}
               </span>

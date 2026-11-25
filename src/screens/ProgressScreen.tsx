@@ -24,6 +24,8 @@ const dm = (iso: ISODate) => {
 export function ProgressScreen({ today }: { today: ISODate }) {
   const data = useHome()
   const [selected, setSelected] = useState<ISODate>(today)
+  // Os anéis grandes só abrem quando tocam num dia. De cara, a faixa da semana já conta a história.
+  const [expanded, setExpanded] = useState(false)
   const days = useMemo(() => weekDays(selected), [selected])
   const week = useMemo(() => days.map((d) => dayProgress(data, d, today)), [data, days, today])
   const day = week.find((p) => p.date === selected)!
@@ -42,7 +44,7 @@ export function ProgressScreen({ today }: { today: ISODate }) {
 
   return (
     <div>
-      <h1 className="text-[2.75rem] leading-none font-extrabold tracking-[-0.045em] text-ink/85">Progresso</h1>
+      <h1 className="text-[2.125rem] leading-none font-light tracking-[-0.03em] text-ink">Progresso</h1>
 
       <section className="ring-card mt-6 rounded-[32px] p-4 pb-5" aria-label="Anéis da semana">
         <div className="flex items-center justify-between">
@@ -72,11 +74,18 @@ export function ProgressScreen({ today }: { today: ISODate }) {
               <li key={p.date}>
                 <button
                   onClick={() => {
-                    if (p.empty || isSel) return
+                    if (p.empty) return
                     haptic()
-                    withTransition(() => setSelected(p.date))
+                    withTransition(() => {
+                      if (isSel) setExpanded((e) => !e)
+                      else {
+                        setSelected(p.date)
+                        setExpanded(true)
+                      }
+                    })
                   }}
                   aria-pressed={isSel}
+                  aria-expanded={isSel ? expanded : undefined}
                   aria-label={`${WEEKDAYS[weekday(p.date)]}, ${dm(p.date)}${p.empty ? ', sem dados' : ''}`}
                   className="pop flex w-full flex-col items-center gap-1.5 py-1"
                 >
@@ -94,7 +103,8 @@ export function ProgressScreen({ today }: { today: ISODate }) {
           })}
         </ol>
 
-        <div className="mt-5 flex justify-center">
+        {expanded && (
+        <div className="rise mt-5 flex justify-center" style={{ viewTransitionName: 'big-rings' }}>
           <Rings
             key={selected}
             values={[ratio(day.today), ratio(day.closing)]}
@@ -104,8 +114,9 @@ export function ProgressScreen({ today }: { today: ISODate }) {
             label={`Pra hoje: ${day.today.done} de ${day.today.total}. Fechamento: ${day.closing.done} de ${day.closing.total}.`}
           />
         </div>
+        )}
 
-        <div className="mt-5 grid grid-cols-2 gap-3">
+        <div className="mt-4 grid grid-cols-2 gap-3">
           <Stat label="Pra hoje" unit="tarefas" ring={day.today} color="var(--ring-1)" />
           <Stat label="Fechamento" unit="itens" ring={day.closing} color="var(--ring-2)" />
         </div>
@@ -113,6 +124,7 @@ export function ProgressScreen({ today }: { today: ISODate }) {
         <p className="tabular mt-4 border-t border-[var(--ring-line)] pt-3 text-[13px] opacity-70">
           Na semana: {weekRing.done} de {weekRing.total} tarefas semanais e mensais feitas
         </p>
+        {!expanded && <p className="mt-1 text-[12px] opacity-50">Toque num dia para ver os anéis maiores.</p>}
       </section>
 
       <DayDetail dayName={dayName} done={day.done} missed={day.missed} empty={day.empty} />
@@ -127,7 +139,7 @@ function Stat({ label, unit, ring, color }: { label: string; unit: string; ring:
         <span className="size-2.5 rounded-full" style={{ background: color }} aria-hidden />
         {label}
       </p>
-      <p className="tabular mt-1 text-[30px] leading-none font-bold tracking-tight" style={{ color }}>
+      <p className="tabular mt-1 text-[28px] leading-none font-light tracking-tight" style={{ color }}>
         {ring.done}
         <span className="opacity-60">/{ring.total}</span>
       </p>

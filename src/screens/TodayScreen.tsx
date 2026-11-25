@@ -72,7 +72,7 @@ export function TodayScreen({ me, today }: { me: Person; today: ISODate }) {
       </header>
 
       <h1 {...enter(1)}>
-        <span className="mt-6 block text-[4.25rem] leading-[0.9] font-extrabold tracking-[-0.05em] text-ink/85">{WEEKDAYS[weekday(today)]}</span>
+        <span className="mt-6 block text-[3rem] leading-none font-light tracking-[-0.035em] text-ink">{WEEKDAYS[weekday(today)]}</span>
       </h1>
 
       <div {...enter(2)}>
@@ -114,7 +114,7 @@ export function TodayScreen({ me, today }: { me: Person; today: ISODate }) {
           <span className="grid size-11 place-items-center rounded-full bg-black/10 dark:bg-accent dark:text-on-accent">
             <Icon name="swap" />
           </span>
-          <h2 id="sug-title" className="mt-4 text-[22px] leading-tight font-bold tracking-[-0.02em]">
+          <h2 id="sug-title" className="mt-4 text-[21px] leading-tight font-medium tracking-[-0.01em]">
             Tem mais tarefa do que o combinado
           </h2>
           <p className="mt-1.5 text-[15px] leading-snug opacity-75">
@@ -243,7 +243,7 @@ function Summary({ items }: { items: DayItem[] }) {
       {(['ney', 'cleide'] as Person[]).map((p) => (
         <Card key={p} className="p-4">
           <Avatar person={p} size={36} />
-          <p className="tabular mt-6 text-[28px] leading-none font-bold">{count(p)}</p>
+          <p className="tabular mt-6 text-[28px] leading-none font-light">{count(p)}</p>
           <p className="mt-1 text-[13px] text-muted">feitas por {PEOPLE[p].name}</p>
         </Card>
       ))}

@@ -19,7 +19,7 @@ export function HouseScreen() {
   return (
     <div>
       <header className="flex items-center justify-between gap-4">
-        <h1 className="text-[2.75rem] leading-none font-extrabold tracking-[-0.045em] text-ink/85">Tarefas</h1>
+        <h1 className="text-[2.125rem] leading-none font-light tracking-[-0.03em] text-ink">Tarefas</h1>
         <button onClick={() => setEditing('new')} aria-label="Nova tarefa" className="pop grid size-14 place-items-center rounded-full bg-solid text-on-solid">
           <Icon name="plus" />
         </button>

@@ -82,7 +82,7 @@ export function TaskEditor({ task, rooms, onClose }: { task: TaskTemplate | null
     >
       <div className="px-5 pt-5 pb-[max(env(safe-area-inset-bottom),1.25rem)]">
         <div className="flex items-center justify-between">
-          <h2 id="editor-title" className="text-[26px] font-bold tracking-[-0.03em]">
+          <h2 id="editor-title" className="text-[24px] font-normal tracking-[-0.02em]">
             {task ? 'Editar tarefa' : 'Nova tarefa'}
           </h2>
           <button onClick={onClose} aria-label="Fechar" className="pop glass grid size-12 place-items-center rounded-full">

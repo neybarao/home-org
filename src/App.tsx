@@ -92,7 +92,7 @@ export default function App() {
 function WhoAreYou({ onChoose }: { onChoose: (p: Person) => void }) {
   return (
     <div className="mx-auto flex min-h-dvh max-w-lg flex-col justify-end px-5 pb-12">
-      <h1 className="text-[2.75rem] font-extrabold leading-[1.02] tracking-[-0.035em]">Quem está usando este celular?</h1>
+      <h1 className="text-[2.25rem] font-light leading-[1.1] tracking-[-0.03em]">Quem está usando este celular?</h1>
       <p className="mt-3 text-[17px] text-muted">Assim o app sabe de quem é cada tarefa que você assumir. Dá pra trocar depois em Ajustes.</p>
       <div className="mt-8 grid grid-cols-2 gap-3">
         {(Object.keys(PEOPLE) as Person[]).map((p) => (
