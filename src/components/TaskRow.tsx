@@ -8,7 +8,7 @@ import { Icon } from './Icon'
 import { Avatar } from './ui'
 
 /** Um bloco por tarefa. A tarefa que é sua ganha a cor de destaque. */
-export function TaskRow({ item, me, today }: { item: DayItem; me: Person; today: ISODate }) {
+export function TaskRow({ item, me, today, vt = 't' }: { item: DayItem; me: Person; today: ISODate; vt?: string }) {
   const { occ, task } = item
   const done = !!occ.doneBy
   const mine = !done && occ.claimedBy === me
@@ -24,7 +24,7 @@ export function TaskRow({ item, me, today }: { item: DayItem; me: Person; today:
 
   return (
     <li
-      style={{ viewTransitionName: vtName('t', occ.key) }}
+      style={{ viewTransitionName: vtName(vt, occ.key) }}
       className={`task flex items-center gap-3 rounded-[26px] py-3 pr-3 pl-2 ${
         mine ? 'bg-mine text-on-mine shadow-[0_8px_24px_rgb(120_150_20/0.15)] dark:border dark:border-accent/40 dark:shadow-none' : 'glass'
       } ${done ? 'opacity-70' : ''}`}
@@ -33,7 +33,7 @@ export function TaskRow({ item, me, today }: { item: DayItem; me: Person; today:
         onClick={() => {
           touched.current = true
           if (!done) haptic(12)
-          withTransition(() => actions.toggleDone(occ.key, me, today))
+          withTransition(() => actions.toggleDone(occ.key, me, today, occ.claimedBy))
         }}
         aria-pressed={done}
         aria-label={done ? `Desmarcar: ${task.title}` : `Marcar como feita: ${task.title}`}
@@ -81,7 +81,7 @@ export function TaskRow({ item, me, today }: { item: DayItem; me: Person; today:
           onClick={() => {
             touched.current = true
             haptic()
-            withTransition(() => actions.claim(occ.key, me))
+            withTransition(() => actions.claim(occ.key, me, occ.claimedBy))
           }}
         />
       )}

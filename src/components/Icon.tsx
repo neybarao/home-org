@@ -1,4 +1,4 @@
-type Name = 'today' | 'house' | 'settings' | 'check' | 'plus' | 'close' | 'chevron' | 'solo' | 'swap'
+type Name = 'today' | 'house' | 'settings' | 'check' | 'plus' | 'close' | 'chevron' | 'back' | 'solo' | 'swap' | 'target' | 'rings'
 
 export function Icon({ name, size = 22 }: { name: Name; size?: number }) {
   const common = {
@@ -59,6 +59,27 @@ export function Icon({ name, size = 22 }: { name: Name; size?: number }) {
       return (
         <svg {...common} strokeWidth={2}>
           <path d="M9 6l6 6-6 6" />
+        </svg>
+      )
+    case 'back':
+      return (
+        <svg {...common} strokeWidth={2}>
+          <path d="M15 6l-6 6 6 6" />
+        </svg>
+      )
+    case 'target':
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="8" />
+          <circle cx="12" cy="12" r="4" />
+          <circle cx="12" cy="12" r="0.6" fill="currentColor" />
+        </svg>
+      )
+    case 'rings':
+      return (
+        <svg {...common}>
+          <path d="M12 3.5a8.5 8.5 0 1 1-8.5 8.5" />
+          <path d="M12 8a4 4 0 1 1-4 4" />
         </svg>
       )
     case 'solo':

@@ -45,6 +45,13 @@
   --on-person: #1b1c1a;
   --late: #8a5a12;
   --late-soft: rgb(255 236 200 / 0.7);
+  /* Anéis de progresso: num cartão escuro, como no Fitness. */
+  --ring-card: #2b2c2a;
+  --on-ring-card: #f4f3f0;
+  --ring-line: rgb(255 255 255 / 0.1);
+  --ring-1: #dcf57f;
+  --on-ring-1: #1b1c1a;
+  --ring-2: #ffc46b;
   color-scheme: light;
 }
 
@@ -69,6 +76,12 @@
   --on-person: #141517;
   --late: #f0a35e;
   --late-soft: rgb(240 163 94 / 0.1);
+  --ring-card: rgb(255 255 255 / 0.05);
+  --on-ring-card: #f1f1ef;
+  --ring-line: rgb(255 255 255 / 0.08);
+  --ring-1: #f2611d;
+  --on-ring-1: #ffffff;
+  --ring-2: #dcf57f;
   color-scheme: dark;
 }
 
@@ -98,6 +111,16 @@ body {
   outline-offset: 2px;
 }
 
+.ring-card {
+  background: var(--ring-card);
+  color: var(--on-ring-card);
+  border: 1px solid var(--glass-border);
+}
+:root:not([data-theme='dark']) .ring-card {
+  border-color: transparent;
+  box-shadow: 0 12px 32px rgb(40 38 34 / 0.18);
+}
+
 .tabular {
   font-variant-numeric: tabular-nums;
 }
@@ -117,6 +140,11 @@ body {
   }
   .pop:active {
     transform: scale(0.94);
+  }
+
+  /* Anéis enchem ao abrir e ao trocar de dia. */
+  .ring-fill {
+    transition: stroke-dashoffset 900ms var(--ease-out);
   }
 
   /* Bloco da tarefa: a cor de "comigo" entra suave. */

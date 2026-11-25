@@ -31,21 +31,25 @@ export function useHome(): HomeData {
 }
 
 export const actions = {
-  /** Assume a tarefa. Se já era sua, solta. Se era do outro, passa para você. */
-  claim(key: string, me: Person) {
-    patchOcc(key, (s) => ({ ...s, claimedBy: s.claimedBy === me ? undefined : me }))
+  /**
+   * Assume a tarefa. Se já era sua, solta. Se era do outro, passa para você.
+   * `current` é quem está com ela agora, contando o dono padrão.
+   */
+  claim(key: string, me: Person, current?: Person) {
+    patchOcc(key, (s) => ({ ...s, claimedBy: current === me ? null : me }))
   },
 
-  toggleDone(key: string, me: Person, today: string) {
+  toggleDone(key: string, me: Person, today: string, current?: Person) {
     patchOcc(key, (s) =>
       s.doneBy
         ? { ...s, doneBy: undefined, doneOn: undefined }
-        : { ...s, claimedBy: s.claimedBy ?? me, doneBy: s.claimedBy ?? me, doneOn: today },
+        : { ...s, claimedBy: current ?? me, doneBy: current ?? me, doneOn: today },
     )
   },
 
   applyMoves(moves: Move[]) {
     const occurrences = { ...data.occurrences }
+    // Quem tinha assumido solta; se a tarefa tem dono, continua com ele.
     for (const m of moves) occurrences[m.key] = { ...occurrences[m.key], plannedDate: m.to, claimedBy: undefined }
     commit({ ...data, occurrences })
   },

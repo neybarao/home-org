@@ -1,5 +1,5 @@
 import { addDays, daysBetween, endOfWeek, rangeISO, startOfWeek, weekOfMonth, weekday, type ISODate } from './dates'
-import type { Frequency, HomeData, Move, Occurrence, TaskTemplate } from './types'
+import type { Frequency, HomeData, Move, Occurrence, Person, TaskTemplate } from './types'
 
 const BIWEEKLY_ANCHOR = '2026-01-05' // uma segunda-feira qualquer, só para definir semanas pares e ímpares
 
@@ -25,6 +25,16 @@ export function carriesOver(t: TaskTemplate): boolean {
   return t.frequency.kind !== 'daily'
 }
 
+/** Fechamento do dia: só vale para diárias. */
+export function isClosing(t: TaskTemplate): boolean {
+  return !!t.closing && t.frequency.kind === 'daily'
+}
+
+/** Entra no limite do dia: nem especial, nem fechamento. */
+export function isRegular(t: TaskTemplate): boolean {
+  return !t.special && !isClosing(t)
+}
+
 export function occurrenceKey(templateId: string, dueDate: ISODate) {
   return `${templateId}@${dueDate}`
 }
@@ -39,7 +49,9 @@ export function buildOccurrences(data: HomeData, from: ISODate, to: ISODate): Oc
       if (!occursOn(t.frequency, date)) continue
       const key = occurrenceKey(t.id, date)
       const state = data.occurrences[key] ?? {}
-      out.push({ ...state, key, templateId: t.id, dueDate: date, plannedDate: state.plannedDate ?? date })
+      // Sem ninguém ter mexido, a tarefa já nasce com o dono. null = soltaram de propósito.
+      const claimedBy = state.claimedBy === undefined ? t.owner : (state.claimedBy ?? undefined)
+      out.push({ ...state, claimedBy, key, templateId: t.id, dueDate: date, plannedDate: state.plannedDate ?? date })
     }
   }
   return out
@@ -86,7 +98,7 @@ export function loadByDay(data: HomeData, days: ISODate[]): Map<ISODate, number>
   const map = new Map(data.templates.map((t) => [t.id, t]))
   for (const occ of buildOccurrences(data, data.settings.startDate, days[days.length - 1])) {
     if (occ.doneBy || !load.has(occ.plannedDate)) continue
-    if (map.get(occ.templateId)!.special) continue
+    if (!isRegular(map.get(occ.templateId)!)) continue
     load.set(occ.plannedDate, load.get(occ.plannedDate)! + 1)
   }
   return load
@@ -114,15 +126,17 @@ export interface Suggestion {
 /**
  * Quando há mais tarefas do que o combinado para hoje, sugere quais ficam
  * (prioridade alta e as mais antigas primeiro) e espalha o resto pelos dias
- * menos carregados. Diárias, especiais e tarefas já assumidas não se movem.
+ * menos carregados. Diárias, especiais, fechamento e tarefas assumidas não se movem.
+ * O dono padrão não prende a tarefa: ela pode ir para outro dia e continua dele.
  */
 export function suggestRedistribution(data: HomeData, today: ISODate, solo: boolean): Suggestion | null {
   const view = dayView(data, today)
   const capacity = data.settings.dailyLimit * (solo ? 1 : 2)
-  const pending = [...view.overdue, ...view.today].filter((i) => !i.occ.doneBy && !i.task.special)
+  const pending = [...view.overdue, ...view.today].filter((i) => !i.occ.doneBy && isRegular(i.task))
   if (pending.length <= capacity) return null
 
-  const fixed = pending.filter((i) => !carriesOver(i.task) || i.occ.claimedBy)
+  const claimedOnPurpose = (i: DayItem) => !!data.occurrences[i.occ.key]?.claimedBy
+  const fixed = pending.filter((i) => !carriesOver(i.task) || claimedOnPurpose(i))
   const movable = pending.filter((i) => !fixed.includes(i)).sort(byPriority)
   const keepCount = Math.max(0, capacity - fixed.length)
   const keep = [...fixed, ...movable.slice(0, keepCount)]
@@ -138,6 +152,22 @@ export function suggestRedistribution(data: HomeData, today: ISODate, solo: bool
     return { key: item.occ.key, to: best, item }
   })
   return { capacity, pending: pending.length, keep, moves }
+}
+
+/**
+ * "Por onde começo?": uma tarefa só. Primeiro as que já são suas, depois as
+ * livres; entre elas, importantes e mais antigas primeiro. As do outro ficam
+ * de fora. `skip` pula sugestões já recusadas e volta ao começo no fim da fila.
+ */
+export function pickOne(data: HomeData, today: ISODate, me: Person, skip = 0): DayItem | null {
+  const view = dayView(data, today)
+  const pending = [...view.overdue, ...view.today].filter(
+    (i) => !i.occ.doneBy && isRegular(i.task) && (!i.occ.claimedBy || i.occ.claimedBy === me),
+  )
+  if (pending.length === 0) return null
+  const mineFirst = (a: DayItem, b: DayItem) => (a.occ.claimedBy === me ? 0 : 1) - (b.occ.claimedBy === me ? 0 : 1) || byPriority(a, b)
+  pending.sort(mineFirst)
+  return pending[skip % pending.length]
 }
 
 export function describeFrequency(f: Frequency): string {

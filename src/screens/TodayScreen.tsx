@@ -5,7 +5,7 @@ import { Avatar, Card, SectionTitle, Switch } from '../components/ui'
 import { actions, useHome } from '../data/store'
 import { haptic, withTransition } from '../lib/motion'
 import { WEEKDAYS, longDate, relativeDay, weekday, type ISODate } from '../lib/dates'
-import { dayView, suggestRedistribution, type DayItem } from '../lib/schedule'
+import { dayView, isClosing, pickOne, suggestRedistribution, type DayItem } from '../lib/schedule'
 import { PEOPLE, type Person } from '../lib/types'
 
 /** Um sim/não que vale só para o dia de hoje neste aparelho. */
@@ -51,9 +51,11 @@ export function TodayScreen({ me, today }: { me: Person; today: ISODate }) {
   const view = useMemo(() => dayView(data, today), [data, today])
   const suggestion = useMemo(() => suggestRedistribution(data, today, solo), [data, today, solo])
 
-  const regularToday = view.today.filter((i) => !i.task.special)
+  const regularToday = view.today.filter((i) => !i.task.special && !isClosing(i.task))
   const special = [...view.overdue, ...view.today].filter((i) => i.task.special)
   const overdue = view.overdue.filter((i) => !i.task.special)
+  const closing = view.today.filter((i) => isClosing(i.task))
+  const closingDone = closing.filter((i) => i.occ.doneBy).length
   const pendingToday = regularToday.filter((i) => !i.occ.doneBy)
   const doneToday = regularToday.filter((i) => i.occ.doneBy)
   const nothingLeft = pendingToday.length === 0 && overdue.length === 0 && special.every((i) => i.occ.doneBy)
@@ -90,6 +92,10 @@ export function TodayScreen({ me, today }: { me: Person; today: ISODate }) {
           }}
         />
       </label>
+      </div>
+
+      <div {...enter(3)}>
+        <PickOne me={me} today={today} />
       </div>
 
       {data.settings.showSummary && <Summary items={[...regularToday, ...overdue]} />}
@@ -146,14 +152,14 @@ export function TodayScreen({ me, today }: { me: Person; today: ISODate }) {
       )}
 
       {overdue.length > 0 && (
-        <TaskSection title="Ficou pra trás" count={overdue.length} tone="late" motion={enter(3)}>
+        <TaskSection title="Ficou pra trás" count={overdue.length} tone="late" motion={enter(4)}>
           {overdue.map((i) => (
             <TaskRow key={i.occ.key} item={i} me={me} today={today} />
           ))}
         </TaskSection>
       )}
 
-      <TaskSection title="Pra hoje" count={pendingToday.length} motion={enter(4)}>
+      <TaskSection title="Pra hoje" count={pendingToday.length} motion={enter(5)}>
         {pendingToday.map((i) => (
           <TaskRow key={i.occ.key} item={i} me={me} today={today} />
         ))}
@@ -173,8 +179,22 @@ export function TodayScreen({ me, today }: { me: Person; today: ISODate }) {
         ))}
       </TaskSection>
 
+      {closing.length > 0 && (
+        <TaskSection
+          title="Fechamento do dia"
+          count={closing.length}
+          progress={`${closingDone} de ${closing.length}`}
+          hint="Antes de dormir, pro dia seguinte começar leve. Fica fora do limite."
+          motion={enter(6)}
+        >
+          {closing.map((i) => (
+            <TaskRow key={i.occ.key} item={i} me={me} today={today} />
+          ))}
+        </TaskSection>
+      )}
+
       {special.length > 0 && (
-        <TaskSection title="Tarefa especial" hint="Leva mais tempo, fica fora do limite do dia." motion={enter(5)}>
+        <TaskSection title="Tarefa especial" hint="Leva mais tempo, fica fora do limite do dia." motion={enter(7)}>
           {special.map((i) => (
             <TaskRow key={i.occ.key} item={i} me={me} today={today} />
           ))}
@@ -187,6 +207,7 @@ export function TodayScreen({ me, today }: { me: Person; today: ISODate }) {
 function TaskSection({
   title,
   count,
+  progress,
   hint,
   tone,
   motion,
@@ -194,6 +215,8 @@ function TaskSection({
 }: {
   title: string
   count?: number
+  /** Ex.: "2 de 3". Substitui a contagem simples. */
+  progress?: string
   hint?: string
   tone?: 'late'
   motion?: { className?: string; style?: React.CSSProperties }
@@ -201,8 +224,9 @@ function TaskSection({
 }) {
   return (
     <section className={`mt-8 ${motion?.className ?? ''}`} style={motion?.style}>
-      <SectionTitle count={count} tone={tone}>
+      <SectionTitle count={progress ? undefined : count} tone={tone}>
         {title}
+        {progress && <span className="tabular font-normal">{progress}</span>}
       </SectionTitle>
       {hint && <p className="-mt-1.5 mb-2 px-1 text-[13px] text-muted">{hint}</p>}
       <ul className="space-y-2">{children}</ul>
@@ -227,5 +251,70 @@ function Summary({ items }: { items: DayItem[] }) {
         {done.length} de {items.length} tarefas do dia feitas.
       </p>
     </div>
+  )
+}
+
+/**
+ * "Por onde começo?": mostra uma tarefa só, para quando a lista paralisa.
+ * "Outra" pula para a próxima sugestão; marcar como feita já traz a seguinte.
+ */
+function PickOne({ me, today }: { me: Person; today: ISODate }) {
+  const data = useHome()
+  const [open, setOpen] = useState(false)
+  const [skip, setSkip] = useState(0)
+  const item = useMemo(() => (open ? pickOne(data, today, me, skip) : null), [open, data, today, me, skip])
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => {
+          haptic()
+          withTransition(() => {
+            setSkip(0)
+            setOpen(true)
+          })
+        }}
+        style={{ viewTransitionName: 'pick-one' }}
+        className="pop glass mt-2 flex w-full items-center gap-3 rounded-full py-2 pr-5 pl-2 text-left"
+      >
+        <span className="grid size-12 shrink-0 place-items-center rounded-full bg-white/90 dark:bg-white/10">
+          <Icon name="target" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[13px] text-muted">Mostra uma tarefa só</span>
+          <span className="block font-semibold">Por onde começo?</span>
+        </span>
+        <Icon name="chevron" size={18} />
+      </button>
+    )
+  }
+
+  return (
+    <section aria-label="Por onde começo" style={{ viewTransitionName: 'pick-one' }} className="rise glass mt-2 rounded-[28px] p-3">
+      <div className="flex items-center justify-between px-2 pt-1 pb-3">
+        <p className="font-semibold">{item ? 'Comece por esta' : 'Nada pendente pra você agora'}</p>
+        <button onClick={() => withTransition(() => setOpen(false))} aria-label="Fechar sugestão" className="pop grid size-10 place-items-center rounded-full">
+          <Icon name="close" size={18} />
+        </button>
+      </div>
+      {item ? (
+        <>
+          <ul>
+            <TaskRow key={item.occ.key} item={item} me={me} today={today} vt="pick" />
+          </ul>
+          <button
+            onClick={() => {
+              haptic()
+              withTransition(() => setSkip((n) => n + 1))
+            }}
+            className="pop mt-2 h-11 w-full rounded-full font-semibold text-muted"
+          >
+            Outra sugestão
+          </button>
+        </>
+      ) : (
+        <p className="px-2 pb-2 text-[15px] text-muted">O que sobrou já está com a outra pessoa ou é do fechamento do dia.</p>
+      )}
+    </section>
   )
 }

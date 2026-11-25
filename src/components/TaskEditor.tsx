@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { actions } from '../data/store'
 import { WEEKDAYS_SHORT } from '../lib/dates'
-import type { Frequency, TaskTemplate } from '../lib/types'
+import { PEOPLE, type Frequency, type Person, type TaskTemplate } from '../lib/types'
 import { Icon } from './Icon'
 import { Segmented, Switch } from './ui'
 
@@ -20,6 +20,8 @@ export function TaskEditor({ task, rooms, onClose }: { task: TaskTemplate | null
   const [important, setImportant] = useState(task?.priority === 'alta')
   const [special, setSpecial] = useState(task?.special ?? false)
   const [active, setActive] = useState(task?.active ?? true)
+  const [closing, setClosing] = useState(task?.closing ?? false)
+  const [owner, setOwner] = useState<Person | ''>(task?.owner ?? '')
   const [error, setError] = useState<string | null>(null)
   const dialog = useRef<HTMLDialogElement>(null)
 
@@ -52,8 +54,11 @@ export function TaskEditor({ task, rooms, onClose }: { task: TaskTemplate | null
       room: room.trim(),
       frequency,
       priority: important ? 'alta' : 'normal',
-      special,
+      // Fechamento só existe para diárias e não combina com tarefa especial.
+      special: kind === 'daily' && closing ? false : special,
       active,
+      closing: kind === 'daily' && closing ? true : undefined,
+      owner: owner || undefined,
     })
     onClose()
   }
@@ -136,9 +141,29 @@ export function TaskEditor({ task, rooms, onClose }: { task: TaskTemplate | null
           </div>
         )}
 
+        <div className="mt-5">
+          <p className={label}>Quem cuida</p>
+          <div className="mt-2">
+            <Segmented
+              label="Quem cuida"
+              value={owner}
+              onChange={setOwner}
+              options={[['', 'Quem pegar'], ...(Object.keys(PEOPLE) as Person[]).map((p) => [p, PEOPLE[p].name] as const)]}
+            />
+          </div>
+          <p className="mt-2 px-1 text-[13px] text-muted">
+            {owner ? `Já aparece como de ${PEOPLE[owner].name}. Dá pra passar pro outro no dia, se precisar.` : 'Fica livre. Quem for fazer toca em "Assumir".'}
+          </p>
+        </div>
+
         <div className="glass mt-5 divide-y divide-line rounded-[24px]">
           <Toggle label="Importante" hint="Vai primeiro quando o dia estiver cheio." checked={important} onChange={setImportant} />
-          <Toggle label="Tarefa especial" hint="Grande demais para o dia. Fica fora do limite." checked={special} onChange={setSpecial} />
+          {kind === 'daily' && (
+            <Toggle label="Fechamento do dia" hint="Rotina antes de dormir. Fica fora do limite." checked={closing} onChange={setClosing} />
+          )}
+          {!(kind === 'daily' && closing) && (
+            <Toggle label="Tarefa especial" hint="Grande demais para o dia. Fica fora do limite." checked={special} onChange={setSpecial} />
+          )}
           {task && <Toggle label="Ativa" hint="Desligue para pausar sem apagar." checked={active} onChange={setActive} />}
         </div>
 

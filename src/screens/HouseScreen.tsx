@@ -3,8 +3,8 @@ import { Icon } from '../components/Icon'
 import { TaskEditor } from '../components/TaskEditor'
 import { Card, SectionTitle } from '../components/ui'
 import { useHome } from '../data/store'
-import { describeFrequency } from '../lib/schedule'
-import type { TaskTemplate } from '../lib/types'
+import { describeFrequency, isClosing } from '../lib/schedule'
+import { PEOPLE, type TaskTemplate } from '../lib/types'
 
 export function HouseScreen() {
   const data = useHome()
@@ -42,6 +42,8 @@ export function HouseScreen() {
                         <span>{describeFrequency(t.frequency)}</span>
                         {t.priority === 'alta' && <span className="text-ink">Importante</span>}
                         {t.special && <span className="text-ink">Especial</span>}
+                        {isClosing(t) && <span className="text-ink">Fechamento do dia</span>}
+                        {t.owner && <span>Com {PEOPLE[t.owner].name}</span>}
                         {!t.active && <span>Pausada</span>}
                       </span>
                     </span>

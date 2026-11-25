@@ -9,10 +9,13 @@ const SEG = 1, TER = 2, QUA = 3, QUI = 4, SEX = 5, SAB = 6
 
 export const SUGGESTED_TASKS: TaskTemplate[] = [
   // Diárias
-  t('louca', 'Lavar a louça e limpar a pia', 'Sala e cozinha', { kind: 'daily' }, 'alta'),
   t('coco', 'Recolher o cocô do quintal', 'Cachorros', { kind: 'daily' }, 'alta'),
   t('alimentacao', 'Organizar a alimentação do neném', 'Neném', { kind: 'daily' }, 'alta'),
-  t('mochila', 'Arrumar a mochila do neném (antes de dormir)', 'Neném', { kind: 'daily' }, 'alta'),
+
+  // Fechamento do dia: poucas coisas antes de dormir para o dia seguinte começar leve.
+  closing(t('louca', 'Lavar a louça e limpar a pia', 'Sala e cozinha', { kind: 'daily' }, 'alta')),
+  closing(t('brinquedos', 'Guardar os brinquedos no cesto', 'Sala e cozinha', { kind: 'daily' }, 'normal')),
+  closing(t('mochila', 'Arrumar a mochila do neném', 'Neném', { kind: 'daily' }, 'alta')),
 
   // Segunda: suíte
   t('banheiro-suite', 'Limpar o banheiro da suíte', 'Suíte', { kind: 'weekly', weekdays: [SEG] }, 'normal'),
@@ -42,6 +45,10 @@ export const SUGGESTED_TASKS: TaskTemplate[] = [
   { ...t('grama', 'Cortar a grama', 'Área externa', { kind: 'monthly', week: 1, weekday: SAB }, 'normal'), special: true },
 ]
 
+function closing(task: TaskTemplate): TaskTemplate {
+  return { ...task, closing: true }
+}
+
 function t(id: string, title: string, room: string, frequency: TaskTemplate['frequency'], priority: TaskTemplate['priority']): TaskTemplate {
   return { id, title, room, frequency, priority, special: false, active: true }
 }
@@ -64,7 +71,13 @@ export function demoData(today: ISODate): HomeData {
   const past = buildOccurrences(data, data.settings.startDate, addDays(today, -1))
   let i = 0
   for (const occ of past) {
-    if (!carriesOver(map.get(occ.templateId)!)) continue
+    const task = map.get(occ.templateId)!
+    if (!carriesOver(task)) {
+      // Diárias e fechamento feitos na maioria dos dias, para o histórico ter cara de uso real.
+      if ((i + occ.dueDate.charCodeAt(9)) % 4 !== 0) data.occurrences[occ.key] = { doneBy: i % 2 ? 'ney' : 'cleide', doneOn: occ.dueDate }
+      i++
+      continue
+    }
     // Mais ou menos dois terços feitas, alternando quem fez.
     if (i % 3 !== 2) {
       const who = i % 2 === 0 ? 'cleide' : 'ney'

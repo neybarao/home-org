@@ -7,10 +7,11 @@ import { todayISO } from './lib/dates'
 import { useTheme } from './lib/theme'
 import { PEOPLE, type Person } from './lib/types'
 import { HouseScreen } from './screens/HouseScreen'
+import { ProgressScreen } from './screens/ProgressScreen'
 import { SettingsScreen } from './screens/SettingsScreen'
 import { TodayScreen } from './screens/TodayScreen'
 
-type Tab = 'hoje' | 'casa' | 'ajustes'
+type Tab = 'hoje' | 'progresso' | 'casa' | 'ajustes'
 
 /** Atualiza a data quando o app volta para a frente (ex.: aberto de um dia para o outro). */
 function useToday() {
@@ -29,6 +30,7 @@ function useToday() {
 
 const TABS = [
   ['hoje', 'Hoje', 'today'],
+  ['progresso', 'Progresso', 'rings'],
   ['casa', 'Tarefas', 'house'],
   ['ajustes', 'Ajustes', 'settings'],
 ] as const
@@ -50,6 +52,7 @@ export default function App() {
     <div className="mx-auto flex min-h-dvh max-w-lg flex-col">
       <main className="flex-1 px-4 pt-[max(env(safe-area-inset-top),1.25rem)] pb-32">
         {tab === 'hoje' && <TodayScreen me={me} today={today} />}
+        {tab === 'progresso' && <ProgressScreen today={today} />}
         {tab === 'casa' && <HouseScreen />}
         {tab === 'ajustes' && <SettingsScreen me={me} onChangeMe={choose} theme={theme} onChangeTheme={setTheme} />}
       </main>

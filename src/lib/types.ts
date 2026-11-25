@@ -24,17 +24,24 @@ export interface TaskTemplate {
   /** Tarefa grande, fora do limite diário (ex.: cortar a grama). */
   special: boolean
   active: boolean
+  /** Rotina da noite (só para diárias). Fica fora do limite diário. */
+  closing?: boolean
+  /** Quem cuida dessa tarefa por padrão. Sem dono, fica livre para quem pegar. */
+  owner?: Person
 }
 
 /** O que muda numa ocorrência depois de criada. */
 export interface OccurrenceState {
   plannedDate?: ISODate
-  claimedBy?: Person
+  /** null = alguém soltou a tarefa de propósito, mesmo ela tendo dono. */
+  claimedBy?: Person | null
   doneBy?: Person
   doneOn?: ISODate
 }
 
-export interface Occurrence extends OccurrenceState {
+export interface Occurrence extends Omit<OccurrenceState, 'claimedBy'> {
+  /** Quem está com a tarefa agora: quem assumiu ou, se ninguém mexeu, o dono. */
+  claimedBy?: Person
   key: string
   templateId: string
   dueDate: ISODate
