@@ -26,7 +26,7 @@ export function TaskRow({ item, me, today, vt = 't' }: { item: DayItem; me: Pers
     <li
       style={{ viewTransitionName: vtName(vt, occ.key) }}
       className={`task flex items-center gap-3 rounded-[26px] py-3 pr-3 pl-2 ${
-        mine ? 'bg-mine text-on-mine shadow-[0_8px_24px_rgb(120_150_20/0.15)] dark:border dark:border-accent/40 dark:shadow-none' : 'glass'
+        mine ? 'bg-mine text-on-mine shadow-[0_8px_24px_rgb(255_177_98/0.25)] dark:border dark:border-accent/40 dark:shadow-none' : 'glass'
       } ${done ? 'opacity-70' : ''}`}
     >
       <button

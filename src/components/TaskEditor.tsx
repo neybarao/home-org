@@ -78,7 +78,7 @@ export function TaskEditor({ task, rooms, onClose }: { task: TaskTemplate | null
       ref={dialog}
       onClose={onClose}
       aria-labelledby="editor-title"
-      className="sheet-in m-0 mt-auto max-h-[92dvh] w-full max-w-none overflow-y-auto rounded-t-[32px] bg-[#ebeae7] p-0 text-ink backdrop:bg-black/35 backdrop:backdrop-blur-sm sm:mx-auto sm:max-w-lg dark:bg-[#1e1f22]"
+      className="sheet-in m-0 mt-auto max-h-[92dvh] w-full max-w-none overflow-y-auto rounded-t-[32px] bg-[#f7f4ee] p-0 text-ink backdrop:bg-black/35 backdrop:backdrop-blur-sm sm:mx-auto sm:max-w-lg dark:bg-[#2c3b4d]"
     >
       <div className="px-5 pt-5 pb-[max(env(safe-area-inset-bottom),1.25rem)]">
         <div className="flex items-center justify-between">

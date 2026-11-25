@@ -18,7 +18,7 @@ export function loadTheme(): ThemeChoice {
 export function applyTheme(choice: ThemeChoice) {
   const dark = choice === 'dark' || (choice === 'system' && media().matches)
   document.documentElement.dataset.theme = dark ? 'dark' : 'light'
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#1f2023' : '#e6e5e2')
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#1b2632' : '#eee9df')
 }
 
 /** Tema escolhido neste aparelho. "Sistema" segue o celular. */

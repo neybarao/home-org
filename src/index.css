@@ -24,78 +24,78 @@
   --color-late-soft: var(--late-soft);
 }
 
-/* Claro: cinza quente, vidro fosco e verde-limão. */
+/* Claro (marca Dia): creme Palladian, azul Blue Fantastic e laranja Burning Flame. */
 :root {
-  --bg: #dcdbd8;
-  --bg-top: #ecebe8;
-  --ink: #1b1c1a;
-  --muted: #6b6a66;
-  --line: rgb(27 28 26 / 0.1);
+  --bg: #eee9df;
+  --bg-top: #f7f4ee;
+  --ink: #1b2632;
+  --muted: #55606b;
+  --line: rgb(27 38 50 / 0.1);
   --glass: rgb(255 255 255 / 0.5);
   --glass-border: rgb(255 255 255 / 0.75);
-  --glass-shadow: 0 1px 2px rgb(40 38 34 / 0.06), 0 8px 24px rgb(40 38 34 / 0.07);
+  --glass-shadow: 0 1px 2px rgb(27 38 50 / 0.06), 0 8px 24px rgb(27 38 50 / 0.08);
   /* Vidro: botões um pouco mais opacos que os cartões. */
   --glass-btn: rgb(255 255 255 / 0.62);
   /* Brilho das bordas: forte em cima e embaixo, quase nada nas laterais. */
   --edge-top: rgb(255 255 255 / 1);
   --edge-side: rgb(255 255 255 / 0.18);
   --edge-bottom: rgb(255 255 255 / 0.8);
-  --edge-line: rgb(40 38 34 / 0.08);
+  --edge-line: rgb(27 38 50 / 0.08);
   --sheen: inset 0 1.5px 1px rgb(255 255 255 / 0.85), inset 0 -1px 1px rgb(255 255 255 / 0.5);
-  --solid: #2b2c2a;
-  --on-solid: #f4f3f0;
-  --accent: #e2f79c;
-  --on-accent: #1b1c1a;
-  --mine: #e2f79c;
-  --on-mine: #1b1c1a;
-  --ney: #c6d3ff;
-  --cleide: #f7c9dc;
-  --on-person: #1b1c1a;
-  --late: #8a5a12;
-  --late-soft: rgb(255 236 200 / 0.7);
+  --solid: #2c3b4d;
+  --on-solid: #eee9df;
+  --accent: #ffb162;
+  --on-accent: #1b2632;
+  --mine: #ffb162;
+  --on-mine: #1b2632;
+  --ney: #c5d0dc;
+  --cleide: #f2c9b8;
+  --on-person: #1b2632;
+  --late: #a35139;
+  --late-soft: rgb(163 81 57 / 0.12);
   /* Anéis de progresso: num cartão escuro, como no Fitness. */
-  --ring-card: #2b2c2a;
-  --on-ring-card: #f4f3f0;
-  --ring-line: rgb(255 255 255 / 0.1);
-  --ring-1: #dcf57f;
-  --on-ring-1: #1b1c1a;
-  --ring-2: #ffc46b;
+  --ring-card: #2c3b4d;
+  --on-ring-card: #eee9df;
+  --ring-line: rgb(238 233 223 / 0.12);
+  --ring-1: #ffb162;
+  --on-ring-1: #1b2632;
+  --ring-2: #d4806a;
   color-scheme: light;
 }
 
-/* Escuro: grafite e laranja. */
+/* Escuro (marca Dia): azul Abyssal, creme e laranja Burning Flame. */
 :root[data-theme='dark'] {
-  --bg: #141517;
-  --bg-top: #2c2d31;
-  --ink: #f1f1ef;
-  --muted: #9a9b9f;
-  --line: rgb(255 255 255 / 0.08);
-  --glass: rgb(255 255 255 / 0.06);
-  --glass-border: rgb(255 255 255 / 0.09);
+  --bg: #1b2632;
+  --bg-top: #2c3b4d;
+  --ink: #eee9df;
+  --muted: #c9c1b1;
+  --line: rgb(238 233 223 / 0.08);
+  --glass: rgb(238 233 223 / 0.06);
+  --glass-border: rgb(238 233 223 / 0.09);
   --glass-shadow: 0 10px 30px rgb(0 0 0 / 0.28);
-  --glass-btn: rgb(255 255 255 / 0.09);
+  --glass-btn: rgb(238 233 223 / 0.09);
   --edge-top: rgb(255 255 255 / 0.42);
   --edge-side: rgb(255 255 255 / 0.06);
   --edge-bottom: rgb(255 255 255 / 0.2);
   --edge-line: rgb(0 0 0 / 0.3);
   --sheen: inset 0 1px 1px rgb(255 255 255 / 0.12), inset 0 -1px 1px rgb(255 255 255 / 0.05);
-  --solid: #f2611d;
-  --on-solid: #ffffff;
-  --accent: #f2611d;
-  --on-accent: #ffffff;
-  --mine: rgb(242 97 29 / 0.16);
-  --on-mine: #f1f1ef;
-  --ney: #9db2ff;
-  --cleide: #f4a0c3;
-  --on-person: #141517;
-  --late: #f0a35e;
-  --late-soft: rgb(240 163 94 / 0.1);
-  --ring-card: rgb(255 255 255 / 0.05);
-  --on-ring-card: #f1f1ef;
-  --ring-line: rgb(255 255 255 / 0.08);
-  --ring-1: #f2611d;
-  --on-ring-1: #ffffff;
-  --ring-2: #dcf57f;
+  --solid: #ffb162;
+  --on-solid: #1b2632;
+  --accent: #ffb162;
+  --on-accent: #1b2632;
+  --mine: rgb(255 177 98 / 0.16);
+  --on-mine: #eee9df;
+  --ney: #9fb2c8;
+  --cleide: #e3a08c;
+  --on-person: #1b2632;
+  --late: #d4806a;
+  --late-soft: rgb(212 128 106 / 0.12);
+  --ring-card: rgb(238 233 223 / 0.05);
+  --on-ring-card: #eee9df;
+  --ring-line: rgb(238 233 223 / 0.08);
+  --ring-1: #ffb162;
+  --on-ring-1: #1b2632;
+  --ring-2: #d4806a;
   color-scheme: dark;
 }
 
@@ -141,7 +141,7 @@ body {
 }
 .glass-btn {
   background: var(--glass-btn);
-  box-shadow: var(--sheen), 0 0 0 0.5px var(--edge-line), 0 2px 8px rgb(40 38 34 / 0.06);
+  box-shadow: var(--sheen), 0 0 0 0.5px var(--edge-line), 0 2px 8px rgb(27 38 50 / 0.06);
   backdrop-filter: blur(12px) saturate(1.6);
   -webkit-backdrop-filter: blur(12px) saturate(1.6);
 }
@@ -186,7 +186,7 @@ body {
 }
 :root:not([data-theme='dark']) .ring-card {
   border-color: transparent;
-  box-shadow: 0 12px 32px rgb(40 38 34 / 0.18);
+  box-shadow: 0 12px 32px rgb(27 38 50 / 0.18);
 }
 
 .tabular {
