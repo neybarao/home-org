@@ -106,7 +106,7 @@ export function SettingsScreen({
             onClick={() => {
               if (window.confirm('Apagar o histórico e começar a contar a partir de hoje? As tarefas cadastradas continuam.')) actions.startFresh()
             }}
-            className="pop mt-4 h-12 w-full rounded-full glass-btn font-semibold"
+            className="pop mt-4 h-12 w-full rounded-full bg-white/80 font-semibold ring-1 ring-black/5 dark:bg-white/[0.08] dark:ring-white/10"
           >
             Começar do zero a partir de hoje
           </button>

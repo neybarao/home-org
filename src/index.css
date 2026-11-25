@@ -112,19 +112,28 @@ body {
   background: radial-gradient(120% 70% at 50% 0%, var(--bg-top) 0%, var(--bg) 70%) fixed;
 }
 
+/* Cartões: vidro fosco discreto. */
+.glass {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+}
+
 /*
- * Vidro no espírito do iOS: fundo translúcido com blur, contorno fino que
- * brilha em cima e embaixo (o ::before) e um reflexo interno nas bordas.
- * .glass = cartões e barras; .glass-btn = botões; .glass-edge = só o brilho,
- * para superfícies coloridas (botão ativo, tarefa assumida).
+ * Vidro no espírito do iOS, só na navegação e no topo: fundo translúcido com
+ * blur, contorno fino que brilha em cima e embaixo (o ::before) e reflexo
+ * interno. .glass-bar = barra; .glass-btn = botões; .glass-edge = só o brilho,
+ * para o botão ativo, que tem cor própria.
  */
-.glass,
+.glass-bar,
 .glass-btn,
 .glass-edge {
   position: relative;
   border: 1px solid transparent;
 }
-.glass {
+.glass-bar {
   background: var(--glass);
   box-shadow: var(--sheen), 0 0 0 0.5px var(--edge-line), var(--glass-shadow);
   backdrop-filter: blur(20px) saturate(1.6);
@@ -139,7 +148,7 @@ body {
 .glass-edge {
   box-shadow: var(--sheen);
 }
-.glass::before,
+.glass-bar::before,
 .glass-btn::before,
 .glass-edge::before {
   content: '';

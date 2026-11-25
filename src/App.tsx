@@ -61,7 +61,7 @@ export default function App() {
         aria-label="Seções"
         className="fixed inset-x-0 bottom-0 flex justify-center bg-gradient-to-t from-bg via-bg/80 to-transparent pt-8 pb-[max(env(safe-area-inset-bottom),1rem)]"
       >
-        <div className="glass flex gap-1.5 rounded-full p-1.5">
+        <div className="glass-bar flex gap-1.5 rounded-full p-1.5">
           {TABS.map(([id, label, icon]) => {
             const active = tab === id
             return (

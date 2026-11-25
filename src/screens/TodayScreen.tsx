@@ -67,7 +67,7 @@ export function TodayScreen({ me, today }: { me: Person; today: ISODate }) {
         <span className="glass-btn rounded-full p-1" aria-label={`Usando como ${PEOPLE[me].name}`}>
           <Avatar person={me} size={48} />
         </span>
-        <span className="glass rounded-full px-4 py-2.5 text-[14px] font-medium">{longDate(today)}</span>
+        <span className="glass-btn rounded-full px-4 py-2.5 text-[14px] font-medium">{longDate(today)}</span>
       </div>
       </header>
 
@@ -77,7 +77,7 @@ export function TodayScreen({ me, today }: { me: Person; today: ISODate }) {
 
       <div {...enter(2)}>
       <label className="glass mt-6 flex items-center gap-3 rounded-full py-2 pr-2.5 pl-2">
-        <span className="grid size-12 shrink-0 place-items-center rounded-full glass-btn">
+        <span className="grid size-12 shrink-0 place-items-center rounded-full bg-white/90 dark:bg-white/10">
           <Icon name="solo" />
         </span>
         <span className="min-w-0 flex-1">
@@ -292,7 +292,7 @@ function PickOne({ me, today }: { me: Person; today: ISODate }) {
         style={{ viewTransitionName: 'pick-one' }}
         className="pop glass mt-2 flex w-full items-center gap-3 rounded-full py-2 pr-5 pl-2 text-left"
       >
-        <span className="grid size-12 shrink-0 place-items-center rounded-full glass-btn">
+        <span className="grid size-12 shrink-0 place-items-center rounded-full bg-white/90 dark:bg-white/10">
           <Icon name="target" />
         </span>
         <span className="min-w-0 flex-1">
@@ -308,7 +308,7 @@ function PickOne({ me, today }: { me: Person; today: ISODate }) {
     <section aria-label="Por onde começo" style={{ viewTransitionName: 'pick-one' }} className="rise glass mt-2 rounded-[28px] p-3">
       <div className="flex items-center justify-between px-2 pt-1 pb-3">
         <p className="font-semibold">{item ? 'Comece por esta' : 'Nada pendente pra você agora'}</p>
-        <button onClick={() => withTransition(() => setOpen(false))} aria-label="Fechar sugestão" className="pop glass-btn grid size-10 place-items-center rounded-full">
+        <button onClick={() => withTransition(() => setOpen(false))} aria-label="Fechar sugestão" className="pop grid size-10 place-items-center rounded-full">
           <Icon name="close" size={18} />
         </button>
       </div>
