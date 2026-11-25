@@ -31,9 +31,17 @@
   --ink: #1b1c1a;
   --muted: #6b6a66;
   --line: rgb(27 28 26 / 0.1);
-  --glass: rgb(255 255 255 / 0.55);
+  --glass: rgb(255 255 255 / 0.5);
   --glass-border: rgb(255 255 255 / 0.75);
-  --glass-shadow: 0 1px 2px rgb(40 38 34 / 0.06), 0 8px 24px rgb(40 38 34 / 0.06);
+  --glass-shadow: 0 1px 2px rgb(40 38 34 / 0.06), 0 8px 24px rgb(40 38 34 / 0.07);
+  /* Vidro: botões um pouco mais opacos que os cartões. */
+  --glass-btn: rgb(255 255 255 / 0.62);
+  /* Brilho das bordas: forte em cima e embaixo, quase nada nas laterais. */
+  --edge-top: rgb(255 255 255 / 1);
+  --edge-side: rgb(255 255 255 / 0.18);
+  --edge-bottom: rgb(255 255 255 / 0.8);
+  --edge-line: rgb(40 38 34 / 0.08);
+  --sheen: inset 0 1.5px 1px rgb(255 255 255 / 0.85), inset 0 -1px 1px rgb(255 255 255 / 0.5);
   --solid: #2b2c2a;
   --on-solid: #f4f3f0;
   --accent: #e2f79c;
@@ -64,7 +72,13 @@
   --line: rgb(255 255 255 / 0.08);
   --glass: rgb(255 255 255 / 0.06);
   --glass-border: rgb(255 255 255 / 0.09);
-  --glass-shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 10px 30px rgb(0 0 0 / 0.25);
+  --glass-shadow: 0 10px 30px rgb(0 0 0 / 0.28);
+  --glass-btn: rgb(255 255 255 / 0.09);
+  --edge-top: rgb(255 255 255 / 0.42);
+  --edge-side: rgb(255 255 255 / 0.06);
+  --edge-bottom: rgb(255 255 255 / 0.2);
+  --edge-line: rgb(0 0 0 / 0.3);
+  --sheen: inset 0 1px 1px rgb(255 255 255 / 0.12), inset 0 -1px 1px rgb(255 255 255 / 0.05);
   --solid: #f2611d;
   --on-solid: #ffffff;
   --accent: #f2611d;
@@ -98,12 +112,51 @@ body {
   background: radial-gradient(120% 70% at 50% 0%, var(--bg-top) 0%, var(--bg) 70%) fixed;
 }
 
+/*
+ * Vidro no espírito do iOS: fundo translúcido com blur, contorno fino que
+ * brilha em cima e embaixo (o ::before) e um reflexo interno nas bordas.
+ * .glass = cartões e barras; .glass-btn = botões; .glass-edge = só o brilho,
+ * para superfícies coloridas (botão ativo, tarefa assumida).
+ */
+.glass,
+.glass-btn,
+.glass-edge {
+  position: relative;
+  border: 1px solid transparent;
+}
 .glass {
   background: var(--glass);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-  backdrop-filter: blur(18px) saturate(1.2);
-  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  box-shadow: var(--sheen), 0 0 0 0.5px var(--edge-line), var(--glass-shadow);
+  backdrop-filter: blur(20px) saturate(1.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+}
+.glass-btn {
+  background: var(--glass-btn);
+  box-shadow: var(--sheen), 0 0 0 0.5px var(--edge-line), 0 2px 8px rgb(40 38 34 / 0.06);
+  backdrop-filter: blur(12px) saturate(1.6);
+  -webkit-backdrop-filter: blur(12px) saturate(1.6);
+}
+.glass-edge {
+  box-shadow: var(--sheen);
+}
+.glass::before,
+.glass-btn::before,
+.glass-edge::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(to bottom, var(--edge-top), var(--edge-side) 32%, var(--edge-side) 68%, var(--edge-bottom));
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+.glass-edge::before {
+  opacity: 0.55;
 }
 
 :focus-visible {

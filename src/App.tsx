@@ -61,7 +61,7 @@ export default function App() {
         aria-label="Seções"
         className="fixed inset-x-0 bottom-0 flex justify-center bg-gradient-to-t from-bg via-bg/80 to-transparent pt-8 pb-[max(env(safe-area-inset-bottom),1rem)]"
       >
-        <div className="glass flex gap-1.5 rounded-full !bg-[#ecebe8]/85 p-1.5 dark:!bg-[#232427]/90">
+        <div className="glass flex gap-1.5 rounded-full p-1.5">
           {TABS.map(([id, label, icon]) => {
             const active = tab === id
             return (
@@ -78,7 +78,7 @@ export default function App() {
                 style={{ viewTransitionName: `nav-${id}` }}
                 aria-current={active ? 'page' : undefined}
                 className={`pop flex h-14 items-center justify-center gap-2 rounded-full ${
-                  active ? 'bg-solid px-5 font-semibold text-on-solid' : 'w-14 bg-white/70 text-ink dark:bg-white/[0.07]'
+                  active ? 'glass-edge bg-solid px-5 font-semibold text-on-solid' : 'glass-btn w-14 text-ink'
                 }`}
               >
                 <Icon name={icon} />

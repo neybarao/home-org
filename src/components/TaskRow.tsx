@@ -26,7 +26,7 @@ export function TaskRow({ item, me, today, vt = 't' }: { item: DayItem; me: Pers
     <li
       style={{ viewTransitionName: vtName(vt, occ.key) }}
       className={`task flex items-center gap-3 rounded-[26px] py-3 pr-3 pl-2 ${
-        mine ? 'bg-mine text-on-mine shadow-[0_8px_24px_rgb(120_150_20/0.15)] dark:border dark:border-accent/40 dark:shadow-none' : 'glass'
+        mine ? 'glass-edge bg-mine text-on-mine shadow-[0_8px_24px_rgb(120_150_20/0.15)] dark:border dark:border-accent/40 dark:shadow-none' : 'glass'
       } ${done ? 'opacity-70' : ''}`}
     >
       <button
@@ -46,8 +46,8 @@ export function TaskRow({ item, me, today, vt = 't' }: { item: DayItem; me: Pers
             done
               ? 'bg-solid text-on-solid'
               : mine
-                ? 'bg-white/80 ring-1 ring-black/10 dark:bg-white/10 dark:ring-white/20'
-                : 'bg-white/80 ring-1 ring-black/10 dark:bg-white/[0.06] dark:ring-white/15'
+                ? 'glass-btn'
+                : 'glass-btn'
           }`}
         >
           {done && (
@@ -105,14 +105,14 @@ function ClaimButton({
   const base = `pop flex h-10 shrink-0 items-center justify-center rounded-full text-[14px] ${animate ? 'chip-in' : ''}`
   if (!claimedBy) {
     return (
-      <button key="free" onClick={onClick} aria-label={`Assumir: ${title}`} className={`${base} bg-white/80 px-4 font-medium text-ink ring-1 ring-black/5 dark:bg-white/[0.08] dark:ring-white/10`}>
+      <button key="free" onClick={onClick} aria-label={`Assumir: ${title}`} className={`${base} glass-btn px-4 font-medium text-ink`}>
         Assumir
       </button>
     )
   }
   if (claimedBy === me) {
     return (
-      <button key="mine" onClick={onClick} aria-label={`Você assumiu. Toque para soltar: ${title}`} className={`${base} bg-solid px-4 font-semibold text-on-solid`}>
+      <button key="mine" onClick={onClick} aria-label={`Você assumiu. Toque para soltar: ${title}`} className={`${base} glass-edge bg-solid px-4 font-semibold text-on-solid`}>
         Comigo
       </button>
     )
@@ -122,7 +122,7 @@ function ClaimButton({
       key="other"
       onClick={onClick}
       aria-label={`${PEOPLE[claimedBy].name} assumiu. Toque para pegar pra você: ${title}`}
-      className={`${base} gap-1.5 bg-white/80 pr-3.5 pl-1 font-medium ring-1 ring-black/5 dark:bg-white/[0.08] dark:ring-white/10`}
+      className={`${base} glass-btn gap-1.5 pr-3.5 pl-1 font-medium`}
     >
       <Avatar person={claimedBy} size={30} />
       {PEOPLE[claimedBy].name}
