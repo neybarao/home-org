@@ -70,7 +70,10 @@ export default function App() {
                 onClick={() => {
                   if (active) return
                   haptic()
-                  withTransition(() => setTab(id), 'tab-switch')
+                  withTransition(() => {
+                    setTab(id)
+                    window.scrollTo(0, 0) // cada aba começa do topo
+                  }, 'tab-switch')
                 }}
                 style={{ viewTransitionName: `nav-${id}` }}
                 aria-current={active ? 'page' : undefined}

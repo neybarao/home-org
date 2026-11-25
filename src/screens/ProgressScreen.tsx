@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Icon } from '../components/Icon'
 import { Rings } from '../components/Rings'
 import { Avatar, Card, SectionTitle } from '../components/ui'
@@ -8,6 +8,7 @@ import { haptic, withTransition } from '../lib/motion'
 import { dayProgress, hasWeekBefore, ratio, weekDays, weekProgress, type Ring } from '../lib/progress'
 import type { DayItem } from '../lib/schedule'
 import { PEOPLE } from '../lib/types'
+import { useCountUp } from '../lib/useCountUp'
 
 const LETTERS = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S']
 
@@ -21,8 +22,16 @@ const dm = (iso: ISODate) => {
  * Fechamento), a semana em mini anéis e, abaixo, o que foi feito no dia escolhido.
  * Sem placar entre os dois: o histórico mostra quem fez cada coisa, não totais por pessoa.
  */
+let hasEntered = false
+
 export function ProgressScreen({ today }: { today: ISODate }) {
   const data = useHome()
+  // Entrada em cascata só na primeira vez que a aba abre.
+  const [entering] = useState(() => !hasEntered)
+  useEffect(() => {
+    hasEntered = true
+  }, [])
+  const enter = (i: number) => (entering ? { className: 'enter', style: { '--i': i } as React.CSSProperties } : {})
   const [selected, setSelected] = useState<ISODate>(today)
   // Os anéis grandes só abrem quando tocam num dia. De cara, a faixa da semana já conta a história.
   const [expanded, setExpanded] = useState(false)
@@ -44,8 +53,11 @@ export function ProgressScreen({ today }: { today: ISODate }) {
 
   return (
     <div>
-      <h1 className="text-[2.125rem] leading-none font-light tracking-[-0.03em] text-ink">Progresso</h1>
+      <h1 {...enter(0)}>
+      <span className="block text-[2.125rem] leading-none font-light tracking-[-0.03em] text-ink">Progresso</span>
+      </h1>
 
+      <div {...enter(1)}>
       <section className="ring-card mt-6 rounded-[32px] p-4 pb-5" aria-label="Anéis da semana">
         <div className="flex items-center justify-between">
           <button
@@ -68,7 +80,7 @@ export function ProgressScreen({ today }: { today: ISODate }) {
         </div>
 
         <ol className="mt-2 grid grid-cols-7 gap-1">
-          {week.map((p) => {
+          {week.map((p, idx) => {
             const isSel = p.date === selected
             return (
               <li key={p.date}>
@@ -96,7 +108,7 @@ export function ProgressScreen({ today }: { today: ISODate }) {
                   >
                     {LETTERS[weekday(p.date)]}
                   </span>
-                  <Rings values={[ratio(p.today), ratio(p.closing)]} size={38} stroke={5} dim={p.empty} animate={false} />
+                  <Rings values={[ratio(p.today), ratio(p.closing)]} size={38} stroke={5} dim={p.empty} delay={idx * 60} />
                 </button>
               </li>
             )
@@ -126,13 +138,17 @@ export function ProgressScreen({ today }: { today: ISODate }) {
         </p>
         {!expanded && <p className="mt-1 text-[12px] opacity-50">Toque num dia para ver os anéis maiores.</p>}
       </section>
+      </div>
 
-      <DayDetail dayName={dayName} done={day.done} missed={day.missed} empty={day.empty} />
+      <div {...enter(2)}>
+      <DayDetail key={selected} dayName={dayName} done={day.done} missed={day.missed} empty={day.empty} />
+      </div>
     </div>
   )
 }
 
 function Stat({ label, unit, ring, color }: { label: string; unit: string; ring: Ring; color: string }) {
+  const done = useCountUp(ring.done)
   return (
     <div>
       <p className="flex items-center gap-2 text-[13px] opacity-70">
@@ -140,7 +156,7 @@ function Stat({ label, unit, ring, color }: { label: string; unit: string; ring:
         {label}
       </p>
       <p className="tabular mt-1 text-[28px] leading-none font-light tracking-tight" style={{ color }}>
-        {ring.done}
+        {done}
         <span className="opacity-60">/{ring.total}</span>
       </p>
       <p className="mt-1 text-[12px] opacity-60">{unit}</p>
@@ -159,8 +175,8 @@ function DayDetail({ dayName, done, missed, empty }: { dayName: string; done: Da
         ) : (
           <Card className="overflow-hidden">
             <ul className="divide-y divide-line">
-              {done.map(({ occ, task }) => (
-                <li key={occ.key} className="flex items-center gap-3 px-5 py-3">
+              {done.map(({ occ, task }, i) => (
+                <li key={occ.key} className="list-in flex items-center gap-3 px-5 py-3" style={{ '--i': i } as React.CSSProperties}>
                   <span className="min-w-0 flex-1">
                     <span className="block leading-snug font-semibold">{task.title}</span>
                     <span className="block text-[13px] text-muted">{task.room}</span>

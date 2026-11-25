@@ -187,6 +187,17 @@ export function TodayScreen({ me, today }: { me: Person; today: ISODate }) {
           hint="Antes de dormir, pro dia seguinte começar leve. Fica fora do limite."
           motion={enter(6)}
         >
+          {closingDone === closing.length && (
+            <li className="rise glass flex items-center gap-4 rounded-[26px] px-5 py-4" style={{ viewTransitionName: 'closing-done' }}>
+              <svg width="30" height="30" viewBox="0 0 24 24" className="moon-in shrink-0 text-ink/70" aria-hidden>
+                <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="currentColor" />
+              </svg>
+              <span>
+                <span className="block font-semibold">Fechamento feito.</span>
+                <span className="block text-muted">Amanhã começa leve. Boa noite.</span>
+              </span>
+            </li>
+          )}
           {closing.map((i) => (
             <TaskRow key={i.occ.key} item={i} me={me} today={today} />
           ))}
@@ -226,7 +237,11 @@ function TaskSection({
     <section className={`mt-8 ${motion?.className ?? ''}`} style={motion?.style}>
       <SectionTitle count={progress ? undefined : count} tone={tone}>
         {title}
-        {progress && <span className="tabular font-normal">{progress}</span>}
+        {progress && (
+          <span key={progress} className="tabular tick-up inline-block font-normal">
+            {progress}
+          </span>
+        )}
       </SectionTitle>
       {hint && <p className="-mt-1.5 mb-2 px-1 text-[13px] text-muted">{hint}</p>}
       <ul className="space-y-2">{children}</ul>

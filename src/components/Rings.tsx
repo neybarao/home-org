@@ -11,6 +11,7 @@ export function Rings({
   gap = stroke * 0.18,
   dim = false,
   animate = true,
+  delay = 0,
   label,
 }: {
   /** De 0 a 1, de fora para dentro. */
@@ -21,6 +22,8 @@ export function Rings({
   /** Dia sem dados (futuro ou antes do início): só os trilhos, mais apagados. */
   dim?: boolean
   animate?: boolean
+  /** Atraso do enchimento, em ms (para a faixa da semana encher em cascata). */
+  delay?: number
   label?: string
 }) {
   // Começa vazio e enche no primeiro quadro, para a transição de CSS rodar.
@@ -33,8 +36,13 @@ export function Rings({
 
   const c = size / 2
   const colors = ['var(--ring-1)', 'var(--ring-2)']
+  // Quando algum anel fecha, a figura dá um pulinho depois de terminar de encher.
+  const closed = !dim && shown.some((v) => v >= 1)
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : true}>
+    <svg
+      className={closed && animate ? 'ring-celebrate' : undefined}
+      style={{ '--ring-delay': `${delay}ms` } as React.CSSProperties}
+      width={size} height={size} viewBox={`0 0 ${size} ${size}`} role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : true}>
       {colors.map((color, i) => {
         const r = c - stroke / 2 - i * (stroke + gap)
         const length = 2 * Math.PI * r
@@ -56,6 +64,7 @@ export function Rings({
                 // Com 0 o traço redondo ainda desenharia uma bolinha; esconde.
                 strokeDashoffset={length * (1 - v)}
                 opacity={v === 0 ? 0 : 1}
+                style={{ transitionDelay: `${delay}ms` }}
               />
             )}
           </g>

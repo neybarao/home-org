@@ -146,6 +146,33 @@ body {
   .ring-fill {
     transition: stroke-dashoffset 900ms var(--ease-out);
   }
+  /* Anel fechado: pulinho depois de terminar de encher. */
+  .ring-celebrate {
+    animation: ring-celebrate 520ms var(--spring) both;
+    animation-delay: calc(var(--ring-delay, 0ms) + 820ms);
+  }
+  @keyframes ring-celebrate {
+    40% {
+      transform: scale(1.07);
+    }
+  }
+
+  /* Itens de lista entram em cascata. */
+  .list-in {
+    animation: enter 420ms var(--ease-out) both;
+    animation-delay: calc(var(--i, 0) * 40ms);
+  }
+
+  /* Lua do fechamento: entra girando de leve. */
+  .moon-in {
+    animation: moon-in 700ms var(--spring) both;
+  }
+  @keyframes moon-in {
+    from {
+      opacity: 0;
+      transform: rotate(-40deg) scale(0.6);
+    }
+  }
 
   /* Bloco da tarefa: a cor de "comigo" entra suave. */
   .task {
