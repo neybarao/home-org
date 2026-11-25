@@ -4,7 +4,7 @@ export type Person = 'ney' | 'cleide'
 
 export const PEOPLE: Record<Person, { name: string; initial: string }> = {
   ney: { name: 'Ney', initial: 'N' },
-  cleide: { name: 'Cleide', initial: 'C' },
+  cleide: { name: 'Cleidi', initial: 'C' },
 }
 
 export type Frequency =
