@@ -417,3 +417,22 @@ body {
     mix-blend-mode: normal;
   }
 }
+
+/*
+ * Squircle (cantos contínuos, como na Apple) em todos os retângulos.
+ * Funciona hoje no Chrome/Android; o Safari ignora e mantém o canto
+ * arredondado comum até ganhar suporte, sem precisar mudar nada aqui.
+ * Círculos e pílulas (rounded-full) continuam redondos.
+ */
+@supports (corner-shape: squircle) {
+  *,
+  *::before,
+  *::after {
+    corner-shape: squircle;
+  }
+  .rounded-full,
+  .rounded-full::before,
+  .rounded-full::after {
+    corner-shape: round;
+  }
+}
