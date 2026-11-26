@@ -28,6 +28,12 @@ describe('conversão de tarefas', () => {
   it('ida e volta preserva a tarefa', () => {
     for (const t of base().templates) expect(rowToTemplate(templateToRow(t))).toEqual(t)
   })
+
+  it('guarda a nota e não grava nota vazia', () => {
+    const t = { ...base().templates[0], note: 'Usar o produto do armário de cima' }
+    expect(rowToTemplate(templateToRow(t))).toEqual(t)
+    expect(templateToRow({ ...t, note: '   ' }).note).toBeNull()
+  })
 })
 
 describe('diff', () => {

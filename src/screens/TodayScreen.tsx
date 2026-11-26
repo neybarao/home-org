@@ -281,6 +281,7 @@ function AddExtra({
 }) {
   const [title, setTitle] = useState('')
   const [who, setWho] = useState<Person | ''>('')
+  const [note, setNote] = useState('')
   const other: Person = me === 'ney' ? 'cleide' : 'ney'
 
   if (!open) {
@@ -304,8 +305,9 @@ function AddExtra({
     if (!title.trim()) return
     haptic(12)
     withTransition(() => {
-      actions.addExtra(title, today, who || undefined)
+      actions.addExtra(title, today, who || undefined, note)
       setTitle('')
+      setNote('')
       setWho('')
       setOpen(false)
     })
@@ -329,6 +331,14 @@ function AddExtra({
           aria-label="Tarefa extra"
           enterKeyHint="done"
           className="h-12 w-full rounded-[18px] bg-white/70 px-4 text-[16px] text-ink placeholder:text-muted dark:bg-white/[0.06]"
+        />
+        <textarea
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          rows={2}
+          placeholder="Nota (opcional)"
+          aria-label="Nota da tarefa extra"
+          className="mt-2 w-full resize-none rounded-[18px] bg-white/70 px-4 py-3 text-[16px] text-ink placeholder:text-muted dark:bg-white/[0.06]"
         />
         <p className="mt-3 px-1 text-[13px] text-muted">Só pra hoje. Conta no dia, mas fica fora do limite.</p>
         <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Quem faz">

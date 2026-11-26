@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { actions } from '../data/store'
 import { haptic, vtName, withTransition } from '../lib/motion'
 import { relativeDay, type ISODate } from '../lib/dates'
@@ -16,6 +16,7 @@ export function TaskRow({ item, me, today, vt = 't' }: { item: DayItem; me: Pers
   const moved = occ.plannedDate !== occ.dueDate
   // Só anima a tarefa que foi tocada, nunca a lista inteira ao abrir a tela.
   const touched = useRef(false)
+  const [noteOpen, setNoteOpen] = useState(false)
   const anim = (cls: string) => (touched.current ? cls : '')
 
   let when: string | null = null
@@ -60,6 +61,16 @@ export function TaskRow({ item, me, today, vt = 't' }: { item: DayItem; me: Pers
 
       <div className="min-w-0 flex-1">
         <p className={`text-[16px] leading-snug ${done ? 'text-muted line-through decoration-1' : 'font-semibold'}`}>{task.title}</p>
+        {task.note && (
+          <button
+            type="button"
+            onClick={() => setNoteOpen((v) => !v)}
+            aria-expanded={noteOpen}
+            className={`mt-0.5 block text-left text-[14px] leading-snug whitespace-pre-line ${noteOpen ? '' : 'line-clamp-2'} ${mine ? 'opacity-80' : 'text-ink/75'}`}
+          >
+            {task.note}
+          </button>
+        )}
         <p className={`mt-0.5 flex flex-wrap items-center gap-x-2 text-[13px] ${mine ? 'opacity-70' : 'text-muted'}`}>
           {task.priority === 'alta' && !done && <span className={mine ? '' : 'text-ink'}>Importante</span>}
           <span>{task.room}</span>

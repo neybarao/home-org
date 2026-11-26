@@ -41,6 +41,9 @@ create table if not exists public.templates (
   updated_at timestamptz not null default now()
 );
 
+-- Nota com mais detalhes da tarefa (opcional).
+alter table public.templates add column if not exists note text;
+
 -- ---------- O que aconteceu com cada tarefa em cada dia ----------
 -- key = id da tarefa + data (a mesma chave que o app já usa).
 -- claimed_by: null = ninguém mexeu (vale o dono), 'none' = soltaram de propósito.

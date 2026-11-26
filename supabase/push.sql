@@ -162,6 +162,7 @@ select cron.unschedule('dia-lembretes') where exists (select 1 from cron.job whe
 select cron.schedule('dia-lembretes', '*/5 * * * *', 'select public.push_run_reminders()');
 
 -- ---------- Aviso quando uma tarefa é colocada no nome de alguém ----------
+-- Requer a coluna note em templates (schema.sql).
 -- Tarefa extra criada para o outro, ou tarefa da rotina que passou a ter o outro como dono.
 -- Quem fez a mudança vem do login (auth.uid()); quem coloca no próprio nome não recebe aviso.
 
@@ -199,6 +200,5 @@ $$;
 
 revoke all on function public.push_on_assign() from public, anon, authenticated;
 
-drop trigger if exists templates_push on public.templates;
-create trigger templates_push after insert or update on public.templates
+create or replace trigger templates_push after insert or update on public.templates
   for each row execute function public.push_on_assign();
