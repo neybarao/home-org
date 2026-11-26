@@ -6,6 +6,11 @@ import { VitePWA } from 'vite-plugin-pwa'
 // GitHub Pages serve o app em https://neybarao.github.io/home-org/
 export default defineConfig({
   base: '/home-org/',
+  // Mostrado em Ajustes, para saber qual versão está aberta no celular.
+  define: {
+    __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+    __BUILD_SHA__: JSON.stringify((process.env.GITHUB_SHA ?? 'local').slice(0, 7)),
+  },
   plugins: [
     react(),
     tailwindcss(),

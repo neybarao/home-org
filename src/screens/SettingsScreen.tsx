@@ -3,6 +3,7 @@ import { Avatar, Card, Segmented, SectionTitle, Switch } from '../components/ui'
 import { haptic, withTransition } from '../lib/motion'
 import { actions, syncNow, useHome, useSyncStatus, type SyncStatus } from '../data/store'
 import type { ThemeChoice } from '../lib/theme'
+import { BUILD_SHA, BUILD_TIME, checkForUpdate, type UpdateResult } from '../lib/update'
 import { PEOPLE, type Person } from '../lib/types'
 
 export function SettingsScreen({
@@ -133,7 +134,54 @@ export function SettingsScreen({
           </button>
         </Card>
       </section>
+
+      <UpdateSection />
     </div>
+  )
+}
+
+function UpdateSection() {
+  const [busy, setBusy] = useState(false)
+  const [result, setResult] = useState<UpdateResult | 'error' | null>(null)
+  const built = new Date(BUILD_TIME).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+  const text: Record<UpdateResult | 'error', string> = {
+    updating: 'Achamos uma versão nova. O app vai recarregar sozinho em instantes.',
+    latest: 'Você já está na versão mais nova.',
+    offline: 'Sem internet. Tente de novo quando a conexão voltar.',
+    unsupported: 'Este navegador não deixa procurar atualização. Feche e abra o app de novo.',
+    error: 'Não deu para procurar agora. Tente de novo daqui a pouco.',
+  }
+  return (
+    <section className="mt-7">
+      <SectionTitle>App</SectionTitle>
+      <Card className="p-5">
+        <p className="text-[14px] text-muted">
+          Versão de {built} <span className="tabular">({BUILD_SHA})</span>. O app procura atualização sozinho ao abrir e quando volta para a frente.
+        </p>
+        {result && (
+          <p className="mt-2 text-[14px] text-ink" aria-live="polite">
+            {text[result]}
+          </p>
+        )}
+        <button
+          disabled={busy}
+          onClick={async () => {
+            haptic()
+            setBusy(true)
+            try {
+              setResult(await checkForUpdate())
+            } catch {
+              setResult('error')
+            } finally {
+              setBusy(false)
+            }
+          }}
+          className="pop mt-4 h-12 w-full rounded-full bg-white/80 font-semibold ring-1 ring-black/5 disabled:opacity-50 dark:bg-white/[0.08] dark:ring-white/10"
+        >
+          {busy ? 'Procurando…' : 'Procurar atualização'}
+        </button>
+      </Card>
+    </section>
   )
 }
 
