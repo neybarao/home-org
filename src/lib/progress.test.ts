@@ -134,3 +134,19 @@ describe('semana', () => {
     expect(hasWeekBefore(d, '2026-11-18')).toBe(true)
   })
 })
+
+describe('anel de extras', () => {
+  it('conta só as extras do dia e tira elas do anel Pra hoje', () => {
+    const d = withPast(MONDAY, MONDAY)
+    const before = dayProgress(d, MONDAY, MONDAY)
+    const extra = (id: string) => ({ id, title: id, room: 'Extra', frequency: { kind: 'once' as const, date: MONDAY }, priority: 'normal' as const, special: false, active: true })
+    const data: HomeData = {
+      ...d,
+      templates: [...d.templates, extra('extra-a'), extra('extra-b')],
+      occurrences: { ...d.occurrences, [`extra-a@${MONDAY}`]: { doneBy: 'ney', doneOn: MONDAY } },
+    }
+    const p = dayProgress(data, MONDAY, MONDAY)
+    expect(p.extra).toEqual({ done: 1, total: 2 })
+    expect(p.today).toEqual(before.today)
+  })
+})

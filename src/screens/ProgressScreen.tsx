@@ -108,7 +108,7 @@ export function ProgressScreen({ today }: { today: ISODate }) {
                   >
                     {LETTERS[weekday(p.date)]}
                   </span>
-                  <Rings values={[ratio(p.today), ratio(p.closing)]} size={38} stroke={5} dim={p.empty} delay={idx * 60} />
+                  <Rings values={[ratio(p.today), ratio(p.closing), ratio(p.extra)]} size={38} stroke={4} dim={p.empty} delay={idx * 60} />
                 </button>
               </li>
             )
@@ -119,18 +119,19 @@ export function ProgressScreen({ today }: { today: ISODate }) {
         <div className="rise mt-5 flex justify-center" style={{ viewTransitionName: 'big-rings' }}>
           <Rings
             key={selected}
-            values={[ratio(day.today), ratio(day.closing)]}
+            values={[ratio(day.today), ratio(day.closing), ratio(day.extra)]}
             size={210}
-            stroke={26}
+            stroke={22}
             dim={day.empty}
-            label={`Pra hoje: ${day.today.done} de ${day.today.total}. Fechamento: ${day.closing.done} de ${day.closing.total}.`}
+            label={`Pra hoje: ${day.today.done} de ${day.today.total}. Fechamento: ${day.closing.done} de ${day.closing.total}. Extras: ${day.extra.done} de ${day.extra.total}.`}
           />
         </div>
         )}
 
-        <div className="mt-4 grid grid-cols-2 gap-3">
+        <div className="mt-4 grid grid-cols-3 gap-3">
           <Stat label="Pra hoje" unit="tarefas" ring={day.today} color="var(--ring-1)" />
           <Stat label="Fechamento" unit="itens" ring={day.closing} color="var(--ring-2)" />
+          <Stat label="Extras" unit="tarefas" ring={day.extra} color="var(--ring-3)" />
         </div>
 
         <p className="tabular mt-4 border-t border-[var(--ring-line)] pt-3 text-[13px] opacity-70">
