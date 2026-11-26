@@ -2,7 +2,7 @@ import { useRef } from 'react'
 import { actions } from '../data/store'
 import { haptic, vtName, withTransition } from '../lib/motion'
 import { relativeDay, type ISODate } from '../lib/dates'
-import type { DayItem } from '../lib/schedule'
+import { isExtra, type DayItem } from '../lib/schedule'
 import { PEOPLE, type Person } from '../lib/types'
 import { Icon } from './Icon'
 import { Avatar } from './ui'
@@ -63,6 +63,16 @@ export function TaskRow({ item, me, today, vt = 't' }: { item: DayItem; me: Pers
         <p className={`mt-0.5 flex flex-wrap items-center gap-x-2 text-[13px] ${mine ? 'opacity-70' : 'text-muted'}`}>
           {task.priority === 'alta' && !done && <span className={mine ? '' : 'text-ink'}>Importante</span>}
           <span>{task.room}</span>
+          {isExtra(task) && !done && (
+            <button
+              onClick={() => {
+                if (window.confirm(`Apagar a tarefa extra "${task.title}"?`)) withTransition(() => actions.removeExtra(task.id))
+              }}
+              className="underline underline-offset-2"
+            >
+              Apagar
+            </button>
+          )}
           {when && <span className={late ? (mine ? 'font-semibold' : 'font-semibold text-late') : ''}>{when}</span>}
         </p>
       </div>

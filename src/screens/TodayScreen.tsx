@@ -177,6 +177,7 @@ export function TodayScreen({ me, today }: { me: Person; today: ISODate }) {
         {doneToday.map((i) => (
           <TaskRow key={i.occ.key} item={i} me={me} today={today} />
         ))}
+        <AddExtra me={me} today={today} />
       </TaskSection>
 
       {closing.length > 0 && (
@@ -246,6 +247,97 @@ function TaskSection({
       {hint && <p className="-mt-1.5 mb-2 px-1 text-[13px] text-muted">{hint}</p>}
       <ul className="space-y-2">{children}</ul>
     </section>
+  )
+}
+
+/** Tarefa extra: coisa que apareceu no dia (ex.: lavar o edredom). Sem frequência, fora do limite. */
+function AddExtra({ me, today }: { me: Person; today: ISODate }) {
+  const [open, setOpen] = useState(false)
+  const [title, setTitle] = useState('')
+  const [who, setWho] = useState<Person | ''>('')
+  const other: Person = me === 'ney' ? 'cleide' : 'ney'
+
+  if (!open) {
+    return (
+      <li>
+        <button
+          onClick={() => {
+            haptic()
+            withTransition(() => setOpen(true))
+          }}
+          style={{ viewTransitionName: 'add-extra' }}
+          className="pop flex w-full items-center gap-3 rounded-[26px] py-3 pr-4 pl-2 text-left text-muted ring-1 ring-line ring-inset"
+        >
+          <span className="grid size-12 shrink-0 place-items-center rounded-full">
+            <Icon name="plus" size={20} />
+          </span>
+          <span className="font-semibold">Tarefa extra</span>
+        </button>
+      </li>
+    )
+  }
+
+  const add = () => {
+    if (!title.trim()) return
+    haptic(12)
+    withTransition(() => {
+      actions.addExtra(title, today, who || undefined)
+      setTitle('')
+      setWho('')
+      setOpen(false)
+    })
+  }
+  const chip = (active: boolean) =>
+    `pop h-10 rounded-full px-4 text-[14px] font-semibold ${active ? 'bg-solid text-on-solid' : 'bg-white/80 ring-1 ring-black/5 dark:bg-white/[0.08] dark:ring-white/10'}`
+
+  return (
+    <li style={{ viewTransitionName: 'add-extra' }} className="rise glass rounded-[26px] p-3">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          add()
+        }}
+      >
+        <input
+          autoFocus
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Ex.: Lavar o edredom"
+          aria-label="Tarefa extra"
+          enterKeyHint="done"
+          className="h-12 w-full rounded-[18px] bg-white/70 px-4 text-[16px] text-ink placeholder:text-muted dark:bg-white/[0.06]"
+        />
+        <p className="mt-3 px-1 text-[13px] text-muted">Só pra hoje. Conta no dia, mas fica fora do limite.</p>
+        <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Quem faz">
+          <button type="button" className={chip(who === '')} onClick={() => setWho('')}>
+            Quem pegar
+          </button>
+          <button type="button" className={chip(who === me)} onClick={() => setWho(me)}>
+            Eu
+          </button>
+          <button type="button" className={chip(who === other)} onClick={() => setWho(other)}>
+            {PEOPLE[other].name}
+          </button>
+        </div>
+        <div className="mt-3 flex gap-2">
+          <button type="submit" disabled={!title.trim()} className="pop h-12 flex-1 rounded-full bg-solid font-semibold text-on-solid disabled:opacity-40">
+            Adicionar
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              withTransition(() => {
+                setOpen(false)
+                setTitle('')
+              })
+            }
+            className="pop h-12 rounded-full px-4 font-semibold text-muted"
+          >
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </li>
   )
 }
 

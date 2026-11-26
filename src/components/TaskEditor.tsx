@@ -7,12 +7,12 @@ import { Segmented, Switch } from './ui'
 
 const ORDER = [1, 2, 3, 4, 5, 6, 0] // segunda a domingo
 
-type Kind = Frequency['kind']
+type Kind = Exclude<Frequency['kind'], 'once'>
 
 export function TaskEditor({ task, rooms, onClose }: { task: TaskTemplate | null; rooms: string[]; onClose: () => void }) {
   const [title, setTitle] = useState(task?.title ?? '')
   const [room, setRoom] = useState(task?.room ?? '')
-  const [kind, setKind] = useState<Kind>(task?.frequency.kind ?? 'weekly')
+  const [kind, setKind] = useState<Kind>(task && task.frequency.kind !== 'once' ? task.frequency.kind : 'weekly')
   const [weekdays, setWeekdays] = useState<number[]>(
     task?.frequency.kind === 'weekly' ? task.frequency.weekdays : task && 'weekday' in task.frequency ? [task.frequency.weekday] : [1],
   )

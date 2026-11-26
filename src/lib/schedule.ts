@@ -17,7 +17,14 @@ export function occursOn(freq: Frequency, date: ISODate): boolean {
     }
     case 'monthly':
       return wd === freq.weekday && weekOfMonth(date) === freq.week
+    case 'once':
+      return date === freq.date
   }
+}
+
+/** Tarefa extra: de uma vez só, criada direto em Hoje. Conta no dia, mas fora do limite e da reorganização. */
+export function isExtra(t: TaskTemplate): boolean {
+  return t.frequency.kind === 'once'
 }
 
 /** Tarefas diárias não acumulam: a de hoje substitui a de ontem. */
@@ -98,7 +105,8 @@ export function loadByDay(data: HomeData, days: ISODate[]): Map<ISODate, number>
   const map = new Map(data.templates.map((t) => [t.id, t]))
   for (const occ of buildOccurrences(data, data.settings.startDate, days[days.length - 1])) {
     if (occ.doneBy || !load.has(occ.plannedDate)) continue
-    if (!isRegular(map.get(occ.templateId)!)) continue
+    const t = map.get(occ.templateId)!
+    if (!isRegular(t) || isExtra(t)) continue
     load.set(occ.plannedDate, load.get(occ.plannedDate)! + 1)
   }
   return load
@@ -132,7 +140,8 @@ export interface Suggestion {
 export function suggestRedistribution(data: HomeData, today: ISODate, solo: boolean): Suggestion | null {
   const view = dayView(data, today)
   const capacity = data.settings.dailyLimit * (solo ? 1 : 2)
-  const pending = [...view.overdue, ...view.today].filter((i) => !i.occ.doneBy && isRegular(i.task))
+  // Tarefa extra entra na contagem do dia, mas não no limite combinado nem na reorganização.
+  const pending = [...view.overdue, ...view.today].filter((i) => !i.occ.doneBy && isRegular(i.task) && !isExtra(i.task))
   if (pending.length <= capacity) return null
 
   const claimedOnPurpose = (i: DayItem) => !!data.occurrences[i.occ.key]?.claimedBy
@@ -184,5 +193,7 @@ export function describeFrequency(f: Frequency): string {
       return `A cada 15 dias, ${names[f.weekday]}`
     case 'monthly':
       return `${f.week}º ${names[f.weekday]} do mês`
+    case 'once':
+      return 'Uma vez só'
   }
 }
