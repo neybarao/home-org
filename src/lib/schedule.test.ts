@@ -129,3 +129,22 @@ describe('tarefa extra', () => {
     expect(s?.moves.some((m) => m.item.task.id === 'extra-1') ?? false).toBe(false)
   })
 })
+
+describe('pular tarefa', () => {
+  it('sai da lista pendente, não volta como atrasada e não conta no progresso', async () => {
+    const { demoData } = await import('./seed')
+    const { dayView, isOpen } = await import('./schedule')
+    const { dayProgress } = await import('./progress')
+    const base = demoData('2026-11-23')
+    const day = '2026-11-23'
+    const item = dayView(base, day).today.find((i) => isOpen(i.occ) && !i.task.closing)!
+    const data = { ...base, occurrences: { ...base.occurrences, [item.occ.key]: { skippedBy: 'ney' as const, skippedOn: day } } }
+    const v = dayView(data, day)
+    const it = v.today.find((i) => i.occ.key === item.occ.key)!
+    expect(isOpen(it.occ)).toBe(false)
+    expect(dayView(data, '2026-11-24').overdue.some((i) => i.occ.key === item.occ.key)).toBe(false)
+    const before = dayProgress(base, day, day)
+    const after = dayProgress(data, day, day)
+    expect(after.today.total + after.extra.total).toBe(before.today.total + before.extra.total - (item.task.frequency.kind === 'once' ? 0 : 1))
+  })
+})

@@ -1,4 +1,4 @@
-type Name = 'today' | 'house' | 'settings' | 'check' | 'plus' | 'close' | 'chevron' | 'back' | 'solo' | 'swap' | 'target' | 'rings'
+type Name = 'today' | 'house' | 'settings' | 'check' | 'plus' | 'close' | 'chevron' | 'back' | 'solo' | 'swap' | 'target' | 'rings' | 'skip'
 
 export function Icon({ name, size = 22 }: { name: Name; size?: number }) {
   const common = {
@@ -93,6 +93,12 @@ export function Icon({ name, size = 22 }: { name: Name; size?: number }) {
       return (
         <svg {...common}>
           <path d="M4 8h13l-3-3M20 16H7l3 3" />
+        </svg>
+      )
+    case 'skip':
+      return (
+        <svg {...common} strokeWidth={2}>
+          <path d="M5 16a7 7 0 0 1 12.5-4.3M18 7v5h-5" />
         </svg>
       )
   }

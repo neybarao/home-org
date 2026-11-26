@@ -24,6 +24,8 @@ export interface OccurrenceRow {
   claimed_by: Person | 'none' | null
   done_by: Person | null
   done_on: string | null
+  skipped_by?: Person | null
+  skipped_on?: string | null
 }
 
 export interface SettingsRow {
@@ -73,6 +75,8 @@ export function occToRow(key: string, s: OccurrenceState): OccurrenceRow {
     claimed_by: s.claimedBy === null ? 'none' : (s.claimedBy ?? null),
     done_by: s.doneBy ?? null,
     done_on: s.doneOn ?? null,
+    skipped_by: s.skippedBy ?? null,
+    skipped_on: s.skippedOn ?? null,
   }
 }
 
@@ -83,6 +87,8 @@ export function rowToOcc(r: OccurrenceRow): OccurrenceState {
   else if (r.claimed_by) s.claimedBy = r.claimed_by
   if (r.done_by) s.doneBy = r.done_by
   if (r.done_on) s.doneOn = r.done_on
+  if (r.skipped_by) s.skippedBy = r.skipped_by
+  if (r.skipped_on) s.skippedOn = r.skipped_on
   return s
 }
 

@@ -11,9 +11,11 @@ import { Avatar } from './ui'
 /** Um bloco por tarefa. A tarefa que é sua ganha a cor de destaque. */
 export function TaskRow({ item, me, today, vt = 't' }: { item: DayItem; me: Person; today: ISODate; vt?: string }) {
   const { occ, task } = item
+  const skipped = !occ.doneBy && !!occ.skippedBy
   const done = !!occ.doneBy
-  const mine = !done && occ.claimedBy === me
-  const late = !done && occ.plannedDate < today
+  const closed = done || skipped
+  const mine = !closed && occ.claimedBy === me
+  const late = !closed && occ.plannedDate < today
   const moved = occ.plannedDate !== occ.dueDate
   // Só anima a tarefa que foi tocada, nunca a lista inteira ao abrir a tela.
   const touched = useRef(false)
@@ -22,15 +24,27 @@ export function TaskRow({ item, me, today, vt = 't' }: { item: DayItem; me: Pers
 
   let when: string | null = null
   if (late) when = `Era pra ${relativeDay(occ.dueDate, today)}`
-  else if (moved && !done) when = `Veio de ${relativeDay(occ.dueDate, today)}`
+  else if (moved && !closed) when = `Veio de ${relativeDay(occ.dueDate, today)}`
+  if (skipped) when = `Pulada por ${PEOPLE[occ.skippedBy!].name}`
 
   return (
     <li
       style={{ viewTransitionName: vtName(vt, occ.key) }}
       className={`task flex items-center gap-3 rounded-[26px] py-3 pr-3 pl-2 ${
         mine ? 'bg-mine text-on-mine shadow-[0_8px_24px_rgb(255_177_98/0.25)] dark:border dark:border-accent/40 dark:shadow-none' : 'glass'
-      } ${done ? 'opacity-70' : ''}`}
+      } ${closed ? 'opacity-70' : ''}`}
     >
+      {skipped ? (
+        <button
+          onClick={() => withTransition(() => actions.toggleSkip(occ.key, me, today))}
+          aria-label={`Desfazer pulo: ${task.title}`}
+          className="pop grid size-12 shrink-0 place-items-center rounded-full"
+        >
+          <span className="grid size-10 place-items-center rounded-full bg-black/[0.06] text-muted dark:bg-white/10">
+            <Icon name="skip" size={18} />
+          </span>
+        </button>
+      ) : (
       <button
         onClick={() => {
           touched.current = true
@@ -59,6 +73,7 @@ export function TaskRow({ item, me, today, vt = 't' }: { item: DayItem; me: Pers
           )}
         </span>
       </button>
+      )}
 
       <button
         type="button"
@@ -66,18 +81,18 @@ export function TaskRow({ item, me, today, vt = 't' }: { item: DayItem; me: Pers
         aria-label={`Ver detalhes: ${task.title}`}
         className="min-w-0 flex-1 text-left"
       >
-        <p className={`text-[16px] leading-snug ${done ? 'text-muted line-through decoration-1' : 'font-semibold'}`}>{task.title}</p>
-        {task.note && !done && (
+        <p className={`text-[16px] leading-snug ${done ? 'text-muted line-through decoration-1' : skipped ? 'text-muted' : 'font-semibold'}`}>{task.title}</p>
+        {task.note && !closed && (
           <p className={`mt-0.5 line-clamp-2 text-[14px] leading-snug whitespace-pre-line ${mine ? 'opacity-80' : 'text-ink/75'}`}>{task.note}</p>
         )}
         <p className={`mt-0.5 flex flex-wrap items-center gap-x-2 text-[13px] ${mine ? 'opacity-70' : 'text-muted'}`}>
-          {task.priority === 'alta' && !done && <span className={mine ? '' : 'text-ink'}>Importante</span>}
+          {task.priority === 'alta' && !closed && <span className={mine ? '' : 'text-ink'}>Importante</span>}
           <span>{task.room}</span>
           {when && <span className={late ? (mine ? 'font-semibold' : 'font-semibold text-late') : ''}>{when}</span>}
         </p>
       </button>
 
-      {done ? (
+      {skipped ? null : done ? (
         <span className={`${anim('chip-in')} flex items-center gap-1.5 text-[13px] text-muted`}>
           <Avatar person={occ.doneBy!} size={26} />
           <span className="sr-only">Feita por {PEOPLE[occ.doneBy!].name}</span>

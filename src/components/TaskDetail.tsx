@@ -55,13 +55,18 @@ function TaskDetail({ target, me, today, onClose }: { target: DetailTarget; me: 
   // Mesma regra de buildOccurrences: sem ninguém ter mexido, vale o dono.
   const claimedBy: Person | undefined = state.claimedBy === undefined ? task.owner : (state.claimedBy ?? undefined)
   const planned = state.plannedDate ?? target.dueDate
-  const done = !!state.doneBy
-  const late = !done && planned < today
   const extra = isExtra(task)
+  const done = !!state.doneBy
+  const skipped = !done && !!state.skippedBy
+  const late = !done && !skipped && planned < today
+  // Pular vale para a rotina (Pra hoje e Ficou pra trás); extra se apaga, fechamento é todo dia.
+  const canSkip = !extra && !isClosing(task)
 
   const when = done
     ? `Feita ${state.doneOn ? relativeDay(state.doneOn, today) : ''}`.trim()
-    : late
+    : skipped
+      ? `Pulada ${state.skippedOn ? relativeDay(state.skippedOn, today) : ''}`.trim()
+      : late
       ? `Era pra ${relativeDay(target.dueDate, today)}`
       : planned !== target.dueDate
         ? `Veio de ${relativeDay(target.dueDate, today)}`
@@ -133,7 +138,18 @@ function TaskDetail({ target, me, today, onClose }: { target: DetailTarget; me: 
           <Row label="Quando" value={<span className={late ? 'font-semibold text-late' : ''}>{when}</span>} />
           <Row label="Frequência" value={extra ? 'Uma vez só' : describeFrequency(task.frequency)} />
           <Row label="Quem cuida" value={task.owner ? PEOPLE[task.owner].name : 'Quem pegar'} />
-          {!done && (
+          {skipped && (
+            <Row
+              label="Pulada por"
+              value={
+                <span className="flex items-center gap-2">
+                  <Avatar person={state.skippedBy!} size={24} />
+                  {PEOPLE[state.skippedBy!].name}
+                </span>
+              }
+            />
+          )}
+          {!done && !skipped && (
             <Row
               label="Agora com"
               value={
@@ -161,6 +177,14 @@ function TaskDetail({ target, me, today, onClose }: { target: DetailTarget; me: 
           )}
         </dl>
 
+        {skipped ? (
+          <button
+            onClick={() => withTransition(() => actions.toggleSkip(key, me, today))}
+            className={`${btn} mt-5 w-full bg-solid text-[16px] text-on-solid`}
+          >
+            Desfazer pulo
+          </button>
+        ) : (
         <button
           onClick={() => {
             if (!done) haptic(12)
@@ -170,7 +194,19 @@ function TaskDetail({ target, me, today, onClose }: { target: DetailTarget; me: 
         >
           {done ? 'Desmarcar' : 'Marcar como feita'}
         </button>
-        {!done && (
+        )}
+        {!done && !skipped && canSkip && (
+          <button
+            onClick={() => {
+              haptic()
+              withTransition(() => actions.toggleSkip(key, me, today))
+            }}
+            className={`${btn} mt-2 w-full ${soft}`}
+          >
+            {late ? 'Pular (não precisa mais)' : 'Pular hoje'}
+          </button>
+        )}
+        {!done && !skipped && (
           <button
             onClick={() => {
               haptic()
