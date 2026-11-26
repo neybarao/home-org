@@ -196,6 +196,22 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* ---------- Navegação de baixo ---------- */
+/* .glass-btn e .glass-edge põem position: relative; aqui as camadas precisam ser absolutas. */
+.tab-pill,
+.tab-glass {
+  position: absolute;
+}
+.tab-label {
+  opacity: 0;
+}
+.tab-btn.is-active .tab-label {
+  opacity: 1;
+}
+.tab-btn.is-active .tab-glass {
+  opacity: 0;
+}
+
 /* ---------- Movimento ---------- */
 /* Tudo aqui só roda quando o celular não pediu para reduzir animações. */
 
@@ -203,6 +219,56 @@ body {
   :root {
     --spring: cubic-bezier(0.34, 1.4, 0.5, 1);
     --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  /* Navegação: pílula e botões com a mesma mola, no mesmo tempo. */
+  .tab-pill,
+  .tab-btn {
+    --nav-ease: cubic-bezier(0.32, 0.72, 0, 1);
+    --nav-time: 480ms;
+  }
+  @supports (transition-timing-function: linear(0, 1)) {
+    .tab-pill,
+    .tab-btn {
+      /* Mola com um leve passar do ponto, como no iOS. */
+      --nav-ease: linear(0, 0.009, 0.035 2.1%, 0.141 4.4%, 0.723 12.9%, 0.938 16.7%, 1.017 19.4%, 1.067, 1.099 24.3%, 1.104 26.1%, 1.088 29.4%, 1.042 34.8%, 1.016 38.8%, 0.999 45%, 0.994 52%, 1.001 72%, 1);
+      --nav-time: 620ms;
+    }
+  }
+  .tab-pill {
+    transition:
+      transform var(--nav-time) var(--nav-ease),
+      width var(--nav-time) var(--nav-ease);
+    will-change: transform, width;
+  }
+  .tab-btn {
+    transition:
+      width var(--nav-time) var(--nav-ease),
+      color 260ms ease-out,
+      transform 180ms var(--spring);
+  }
+  .tab-btn:active {
+    transform: scale(0.94);
+  }
+  .tab-glass {
+    transition: opacity 240ms ease-out;
+  }
+  .tab-label {
+    transition: opacity 160ms ease-out;
+  }
+  /* O rótulo aparece depois que o botão já começou a abrir. */
+  .tab-btn.is-active .tab-label {
+    transition: opacity 260ms ease-out 140ms;
+  }
+  /* Página nova entra com um fade curto. */
+  .tab-in {
+    animation: tab-in 260ms var(--ease-out) backwards;
+  }
+  @keyframes tab-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
   }
 
   /* Botões afundam um pouco ao toque. */
@@ -403,11 +469,6 @@ body {
       opacity: 0;
       transform: translateY(8px);
     }
-  }
-
-  /* Troca de aba: só a navegação se mexe, a página faz um fade. */
-  .tab-switch main * {
-    view-transition-name: none !important;
   }
 
   /* Troca de tema: só o círculo, sem o fade padrão. */
