@@ -19,7 +19,43 @@ Publicado em https://neybarao.github.io/home-org/ pelo GitHub Actions a cada pus
 
 ## Estado atual
 
-Protótipo de interface. Os dados ficam só no celular (localStorage) e começam com exemplos. A próxima etapa é ligar o Supabase para os dois aparelhos verem a mesma lista. A troca acontece em `src/data/repo.ts`.
+Os dois celulares veem a mesma lista pelo Supabase. Cada um entra com o próprio e-mail (link mágico, sem senha) e o app descobre quem é pela tabela `members`.
+
+- O localStorage continua como cache, então o app abre e funciona sem internet. O que mudar offline sobe quando a conexão volta.
+- Cada mudança envia ao banco só as linhas que mudaram (`src/data/remote.ts`). O outro celular recebe na hora pelo Realtime.
+- Quando o app volta para a frente, ou a internet volta, ele lê tudo de novo e junta com o que ainda não subiu.
+- Na primeira vez, se o banco estiver vazio, o celular sobe os dados que já tem. Se o banco já tiver a casa, ela substitui os dados locais.
+- Sem `.env.production` (ex.: `npm run dev` sem variáveis) o app volta ao modo só local, com a escolha manual de quem usa o celular.
+
+## Banco de dados (Supabase)
+
+Os arquivos ficam em `supabase/`. Passo a passo para criar:
+
+1. Em supabase.com, crie um projeto novo (plano grátis, região São Paulo).
+2. No **SQL Editor**, cole e rode `supabase/schema.sql` inteiro. Depois rode `supabase/maintenance.sql`.
+3. Em **Authentication > Sign In / Providers**, deixe o login por e-mail ligado (link mágico). Em **URL Configuration**, coloque `https://neybarao.github.io/home-org/` como Site URL.
+4. Em **Project Settings > API**, copie a URL do projeto e a chave **publishable** (nunca a secret) para um arquivo `.env.production` na raiz:
+   ```
+   VITE_SUPABASE_URL=https://SEU-PROJETO.supabase.co
+   VITE_SUPABASE_KEY=sb_publishable_...
+   ```
+   A chave publishable foi feita para ficar no navegador; quem protege os dados é o RLS do `schema.sql`.
+5. Opcional, para o app instalado no iPhone: o link do e-mail abre no Safari, e não no app da tela inicial. Para entrar direto no app, em **Authentication > Emails > Magic Link** acrescente `{{ .Token }}` no texto do e-mail. A tela "Confira o seu e-mail" aceita esse código.
+6. Depois que cada um entrar no app pela primeira vez, libere os dois no SQL Editor (os ids estão em **Authentication > Users**):
+   ```sql
+   insert into public.members (user_id, person) values
+     ('ID-DO-NEY', 'ney'),
+     ('ID-DA-CLEIDE', 'cleide');
+   ```
+
+### Pausa do plano grátis
+
+O Supabase pausa projetos grátis com pouca atividade em 7 dias. Igual ao BoraLah, dois workflows evitam isso:
+
+- `keepalive.yml`: uma leitura leve a cada 4 horas.
+- `keepalive-madrugada.yml`: por volta das 3h cria e altera um registro fictício numa tabela separada (`recycle`), espera 30 minutos e apaga.
+
+Os dois só rodam depois que o `.env.production` existir. O GitHub pode desligar tarefas agendadas em repositórios parados por muito tempo; se a pausa acontecer, reative o projeto no painel do Supabase (os dados não se perdem) e rode os workflows de novo.
 
 ## Desenvolvimento
 

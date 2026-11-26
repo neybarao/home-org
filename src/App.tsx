@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Icon } from './components/Icon'
 import { Avatar } from './components/ui'
+import { useAuth } from './data/auth'
 import { loadMe, saveMe } from './data/repo'
+import { startSync, stopSync } from './data/store'
 import { haptic, withTransition } from './lib/motion'
 import { todayISO } from './lib/dates'
 import { useTheme } from './lib/theme'
 import { PEOPLE, type Person } from './lib/types'
+import { AuthErrorScreen, CheckEmailScreen, LoadingScreen, SignInScreen, WaitingScreen } from './screens/AuthScreens'
 import { HouseScreen } from './screens/HouseScreen'
 import { ProgressScreen } from './screens/ProgressScreen'
 import { SettingsScreen } from './screens/SettingsScreen'
@@ -36,17 +39,58 @@ const TABS = [
 ] as const
 
 export default function App() {
-  const [me, setMe] = useState<Person | null>(loadMe)
-  const [tab, setTab] = useState<Tab>('hoje')
-  const [theme, setTheme] = useTheme()
-  const today = useToday()
+  const auth = useAuth()
+  const { state } = auth
+  const ready = state.kind === 'ready'
 
+  // Sincroniza com o banco só quando a conta está liberada em public.members.
+  useEffect(() => {
+    if (!ready) return
+    startSync()
+    return () => stopSync()
+  }, [ready])
+
+  switch (state.kind) {
+    case 'local':
+      return <LocalApp />
+    case 'loading':
+      return <LoadingScreen />
+    case 'signedOut':
+      return <SignInScreen onSend={auth.sendLink} />
+    case 'sent':
+      return <CheckEmailScreen email={state.email} onResend={auth.sendLink} onCode={auth.verifyCode} onBack={auth.restart} />
+    case 'waiting':
+      return <WaitingScreen email={state.email} onSignOut={() => void auth.signOut()} />
+    case 'error':
+      return <AuthErrorScreen message={state.message} onRetry={auth.retry} onRestart={auth.restart} />
+    case 'ready':
+      return <Main me={state.person} account={{ email: state.email, onSignOut: auth.signOut }} />
+  }
+}
+
+/** Sem Supabase configurado (ex.: dev local sem .env): escolhe a pessoa à mão, dados só neste celular. */
+function LocalApp() {
+  const [me, setMe] = useState<Person | null>(loadMe)
   const choose = (p: Person) => {
     saveMe(p)
     setMe(p)
   }
-
   if (!me) return <WhoAreYou onChoose={choose} />
+  return <Main me={me} onChangeMe={choose} />
+}
+
+function Main({
+  me,
+  onChangeMe,
+  account,
+}: {
+  me: Person
+  onChangeMe?: (p: Person) => void
+  account?: { email: string; onSignOut: () => Promise<void> }
+}) {
+  const [tab, setTab] = useState<Tab>('hoje')
+  const [theme, setTheme] = useTheme()
+  const today = useToday()
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-lg flex-col">
@@ -54,7 +98,7 @@ export default function App() {
         {tab === 'hoje' && <TodayScreen me={me} today={today} />}
         {tab === 'progresso' && <ProgressScreen today={today} />}
         {tab === 'casa' && <HouseScreen />}
-        {tab === 'ajustes' && <SettingsScreen me={me} onChangeMe={choose} theme={theme} onChangeTheme={setTheme} />}
+        {tab === 'ajustes' && <SettingsScreen me={me} onChangeMe={onChangeMe} account={account} theme={theme} onChangeTheme={setTheme} />}
       </main>
 
       <nav

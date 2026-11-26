@@ -1,18 +1,21 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { Avatar, Card, Segmented, SectionTitle, Switch } from '../components/ui'
 import { haptic, withTransition } from '../lib/motion'
-import { actions, useHome } from '../data/store'
+import { actions, syncNow, useHome, useSyncStatus, type SyncStatus } from '../data/store'
 import type { ThemeChoice } from '../lib/theme'
 import { PEOPLE, type Person } from '../lib/types'
 
 export function SettingsScreen({
   me,
   onChangeMe,
+  account,
   theme,
   onChangeTheme,
 }: {
   me: Person
-  onChangeMe: (p: Person) => void
+  /** Só no modo local. Com conta, a pessoa vem de public.members. */
+  onChangeMe?: (p: Person) => void
+  account?: { email: string; onSignOut: () => Promise<void> }
   theme: ThemeChoice
   onChangeTheme: (t: ThemeChoice) => void
 }) {
@@ -76,35 +79,43 @@ export function SettingsScreen({
         </label>
       </section>
 
-      <section className="mt-7">
-        <SectionTitle>Quem usa este celular</SectionTitle>
-        <div className="grid grid-cols-2 gap-2">
-          {(Object.keys(PEOPLE) as Person[]).map((p) => (
-            <button
-              key={p}
-              aria-pressed={me === p}
-              onClick={() => {
-                haptic()
-                withTransition(() => onChangeMe(p))
-              }}
-              className={`pop flex items-center gap-3 rounded-[24px] p-2.5 pr-4 font-semibold ${me === p ? 'bg-solid text-on-solid' : 'glass'}`}
-            >
-              <Avatar person={p} size={40} />
-              {PEOPLE[p].name}
-            </button>
-          ))}
-        </div>
-      </section>
+      {account ? (
+        <AccountSection me={me} email={account.email} onSignOut={account.onSignOut} />
+      ) : (
+        <section className="mt-7">
+          <SectionTitle>Quem usa este celular</SectionTitle>
+          <div className="grid grid-cols-2 gap-2">
+            {(Object.keys(PEOPLE) as Person[]).map((p) => (
+              <button
+                key={p}
+                aria-pressed={me === p}
+                onClick={() => {
+                  haptic()
+                  withTransition(() => onChangeMe?.(p))
+                }}
+                className={`pop flex items-center gap-3 rounded-[24px] p-2.5 pr-4 font-semibold ${me === p ? 'bg-solid text-on-solid' : 'glass'}`}
+              >
+                <Avatar person={p} size={40} />
+                {PEOPLE[p].name}
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="mt-7">
         <SectionTitle>Dados</SectionTitle>
         <Card className="p-5">
-          <p className="text-[14px] text-muted">
-            Por enquanto tudo fica só neste celular, com dados de exemplo. Quando o banco de dados entrar, os dois vão ver a mesma lista.
-          </p>
+          {account ? (
+            <SyncLine />
+          ) : (
+            <p className="text-[14px] text-muted">Tudo fica só neste celular. Sem o banco de dados configurado, o outro não vê as mudanças.</p>
+          )}
           <button
             onClick={() => {
-              if (window.confirm('Apagar o histórico e começar a contar a partir de hoje? As tarefas cadastradas continuam.')) actions.startFresh()
+              if (window.confirm(account
+                ? 'Apagar o histórico dos dois celulares e começar a contar a partir de hoje? As tarefas cadastradas continuam.'
+                : 'Apagar o histórico e começar a contar a partir de hoje? As tarefas cadastradas continuam.')) actions.startFresh()
             }}
             className="pop mt-4 h-12 w-full rounded-full bg-white/80 font-semibold ring-1 ring-black/5 dark:bg-white/[0.08] dark:ring-white/10"
           >
@@ -112,7 +123,9 @@ export function SettingsScreen({
           </button>
           <button
             onClick={() => {
-              if (window.confirm('Voltar para os dados de exemplo? O que vocês mudaram será perdido.')) actions.resetDemo()
+              if (window.confirm(account
+                ? 'Voltar para os dados de exemplo nos dois celulares? O que vocês mudaram será perdido.'
+                : 'Voltar para os dados de exemplo? O que vocês mudaram será perdido.')) actions.resetDemo()
             }}
             className="pop mt-2 h-12 w-full rounded-full font-semibold text-muted"
           >
@@ -120,6 +133,82 @@ export function SettingsScreen({
           </button>
         </Card>
       </section>
+    </div>
+  )
+}
+
+function AccountSection({ me, email, onSignOut }: { me: Person; email: string; onSignOut: () => Promise<void> }) {
+  const [busy, setBusy] = useState(false)
+  return (
+    <section className="mt-7">
+      <SectionTitle>Conta</SectionTitle>
+      <Card className="p-5">
+        <div className="flex items-center gap-3">
+          <Avatar person={me} size={40} />
+          <span className="min-w-0">
+            <span className="block font-semibold">{PEOPLE[me].name}</span>
+            <span className="block truncate text-[13px] text-muted">{email}</span>
+          </span>
+        </div>
+        <button
+          disabled={busy}
+          onClick={async () => {
+            if (!window.confirm('Sair desta conta neste celular? Para voltar, é só entrar de novo pelo e-mail.')) return
+            setBusy(true)
+            try {
+              await onSignOut()
+            } finally {
+              setBusy(false)
+            }
+          }}
+          className="pop mt-4 h-12 w-full rounded-full bg-white/80 font-semibold ring-1 ring-black/5 disabled:opacity-50 dark:bg-white/[0.08] dark:ring-white/10"
+        >
+          {busy ? 'Saindo…' : 'Sair desta conta'}
+        </button>
+      </Card>
+    </section>
+  )
+}
+
+function lastSyncText(ms?: number): string {
+  if (!ms) return ''
+  const min = Math.round((Date.now() - ms) / 60_000)
+  if (min < 1) return 'agora há pouco'
+  if (min < 60) return `há ${min} min`
+  return `às ${new Date(ms).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`
+}
+
+function syncText(s: SyncStatus): string {
+  switch (s.state) {
+    case 'local':
+      return 'Só neste celular.'
+    case 'connecting':
+      return 'Conectando ao banco…'
+    case 'syncing':
+      return 'Sincronizando…'
+    case 'synced':
+      return `Sincronizado ${lastSyncText(s.lastSync)}. Os dois celulares veem a mesma lista.`
+    case 'offline':
+      return 'Sem internet. O que vocês mudarem fica guardado aqui e sobe quando a conexão voltar.'
+    case 'error':
+      return `Não deu para sincronizar${s.message ? ` (${s.message})` : ''}. O app tenta de novo sozinho.`
+  }
+}
+
+function SyncLine() {
+  const s = useSyncStatus()
+  const dot = s.state === 'synced' ? 'bg-ink/50' : s.state === 'error' ? 'bg-late' : 'bg-accent'
+  return (
+    <div>
+      <p className="flex items-start gap-2.5 text-[14px] text-muted" aria-live="polite">
+        <span className={`mt-[7px] size-2 shrink-0 rounded-full ${dot} ${s.state === 'syncing' || s.state === 'connecting' ? 'animate-pulse' : ''}`} aria-hidden />
+        <span>{syncText(s)}</span>
+      </p>
+      {(s.state === 'error' || s.state === 'offline') && (
+        <button onClick={syncNow} className="pop mt-2 text-[14px] font-semibold text-ink underline underline-offset-4">
+          Tentar agora
+        </button>
+      )}
     </div>
   )
 }

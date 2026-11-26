@@ -1,0 +1,26 @@
+name: Manter Supabase acordado
+
+# O plano grátis do Supabase pausa projetos com pouca atividade em 7 dias.
+# Esta tarefa faz uma leitura simples no banco a cada 4 horas (mesmo esquema do BoraLah).
+# Com o RLS fechado a resposta vem vazia, mas a consulta chega ao banco, que é o que conta.
+on:
+  schedule:
+    - cron: '23 */4 * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Consulta leve no banco
+        run: |
+          [ -f .env.production ] && { set -a; . ./.env.production; set +a; }
+          URL="$VITE_SUPABASE_URL"; KEY="$VITE_SUPABASE_KEY"
+          if [ -z "$URL" ] || [ -z "$KEY" ]; then
+            echo "Supabase ainda não configurado. Nada a fazer."
+            exit 0
+          fi
+          curl --fail --silent --show-error \
+            -H "apikey: $KEY" \
+            "$URL/rest/v1/settings?select=id&limit=1"

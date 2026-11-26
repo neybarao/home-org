@@ -1,0 +1,39 @@
+name: Atividade de madrugada no Supabase
+
+# Todo dia por volta das 3h (horário de Campo Grande): cria e altera um
+# registro fictício, espera 30 minutos e apaga. Complementa o ping de leitura.
+# Requer o supabase/maintenance.sql aplicado no banco. Mesmo esquema do BoraLah.
+on:
+  schedule:
+    - cron: '13 7 * * *'
+  workflow_dispatch:
+
+jobs:
+  criar-alterar-apagar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Carregar configuração
+        run: |
+          if [ -f .env.production ]; then grep '^VITE_SUPABASE_' .env.production >> "$GITHUB_ENV" || true; fi
+      - name: Criar e alterar
+        run: |
+          if [ -z "$VITE_SUPABASE_URL" ] || [ -z "$VITE_SUPABASE_KEY" ]; then
+            echo "Supabase ainda não configurado. Nada a fazer."
+            exit 0
+          fi
+          curl --fail-with-body --silent --show-error -X POST \
+            -H "apikey: $VITE_SUPABASE_KEY" -H "Content-Type: application/json" \
+            -d '{"etapa":"criar"}' \
+            "$VITE_SUPABASE_URL/rest/v1/rpc/run_recycle"
+      - name: Esperar 30 minutos
+        if: env.VITE_SUPABASE_URL != ''
+        run: sleep 1800
+      - name: Apagar
+        if: always() && env.VITE_SUPABASE_URL != ''
+        run: |
+          curl --fail-with-body --silent --show-error -X POST \
+            -H "apikey: $VITE_SUPABASE_KEY" -H "Content-Type: application/json" \
+            -d '{"etapa":"apagar"}' \
+            "$VITE_SUPABASE_URL/rest/v1/rpc/run_recycle"
