@@ -19,7 +19,13 @@ Publicado em https://neybarao.github.io/home-org/ pelo GitHub Actions a cada pus
 
 ## Estado atual
 
-Protótipo de interface. Os dados ficam só no celular (localStorage) e começam com exemplos. A próxima etapa é ligar o Supabase para os dois aparelhos verem a mesma lista. A troca acontece em `src/data/repo.ts`.
+Os dois celulares veem a mesma lista pelo Supabase. Cada um entra com o próprio e-mail (link mágico, sem senha) e o app descobre quem é pela tabela `members`.
+
+- O localStorage continua como cache, então o app abre e funciona sem internet. O que mudar offline sobe quando a conexão volta.
+- Cada mudança envia ao banco só as linhas que mudaram (`src/data/remote.ts`). O outro celular recebe na hora pelo Realtime.
+- Quando o app volta para a frente, ou a internet volta, ele lê tudo de novo e junta com o que ainda não subiu.
+- Na primeira vez, se o banco estiver vazio, o celular sobe os dados que já tem. Se o banco já tiver a casa, ela substitui os dados locais.
+- Sem `.env.production` (ex.: `npm run dev` sem variáveis) o app volta ao modo só local, com a escolha manual de quem usa o celular.
 
 ## Banco de dados (Supabase)
 
@@ -34,7 +40,8 @@ Os arquivos ficam em `supabase/`. Passo a passo para criar:
    VITE_SUPABASE_KEY=sb_publishable_...
    ```
    A chave publishable foi feita para ficar no navegador; quem protege os dados é o RLS do `schema.sql`.
-5. Depois que cada um entrar no app pela primeira vez, libere os dois no SQL Editor (os ids estão em **Authentication > Users**):
+5. Opcional, para o app instalado no iPhone: o link do e-mail abre no Safari, e não no app da tela inicial. Para entrar direto no app, em **Authentication > Emails > Magic Link** acrescente `{{ .Token }}` no texto do e-mail. A tela "Confira o seu e-mail" aceita esse código.
+6. Depois que cada um entrar no app pela primeira vez, libere os dois no SQL Editor (os ids estão em **Authentication > Users**):
    ```sql
    insert into public.members (user_id, person) values
      ('ID-DO-NEY', 'ney'),
