@@ -13,7 +13,7 @@ type Kind = Exclude<Frequency['kind'], 'once'> | 'extra'
 export function TaskEditor({ task, rooms, onClose }: { task: TaskTemplate | null; rooms: string[]; onClose: () => void }) {
   const [title, setTitle] = useState(task?.title ?? '')
   const [room, setRoom] = useState(task?.room ?? '')
-  const [kind, setKind] = useState<Kind>(task && task.frequency.kind !== 'once' ? task.frequency.kind : 'weekly')
+  const [kind, setKind] = useState<Kind>(task ? (task.frequency.kind === 'once' ? 'extra' : task.frequency.kind) : 'weekly')
   const [weekdays, setWeekdays] = useState<number[]>(
     task?.frequency.kind === 'weekly' ? task.frequency.weekdays : task && 'weekday' in task.frequency ? [task.frequency.weekday] : [1],
   )
@@ -44,7 +44,8 @@ export function TaskEditor({ task, rooms, onClose }: { task: TaskTemplate | null
   const save = () => {
     if (!title.trim()) return setError('Dê um nome para a tarefa.')
     if (kind === 'extra') {
-      actions.addExtra(title, todayISO(), owner || undefined, note)
+      if (task) actions.saveTemplate({ ...task, title: title.trim(), owner: owner || undefined, note: note.trim() || undefined })
+      else actions.addExtra(title, todayISO(), owner || undefined, note)
       return onClose()
     }
     if (!room.trim()) return setError('Diga em que parte da casa ela fica.')
@@ -72,7 +73,8 @@ export function TaskEditor({ task, rooms, onClose }: { task: TaskTemplate | null
 
   const remove = () => {
     if (task && window.confirm(`Apagar "${task.title}"? O histórico dela também some.`)) {
-      actions.deleteTemplate(task.id)
+      if (task.frequency.kind === 'once') actions.removeExtra(task.id)
+      else actions.deleteTemplate(task.id)
       onClose()
     }
   }
@@ -125,6 +127,7 @@ export function TaskEditor({ task, rooms, onClose }: { task: TaskTemplate | null
         </label>
         )}
 
+        {!(task && kind === 'extra') && (
         <div className="mt-5">
           <p className={label}>Com que frequência</p>
           <div className="mt-2">
@@ -143,6 +146,7 @@ export function TaskEditor({ task, rooms, onClose }: { task: TaskTemplate | null
             />
           </div>
         </div>
+        )}
 
         {kind === 'extra' && (
           <p className="mt-2 px-1 text-[13px] text-muted">Aparece em Hoje, conta no dia e fica fora do limite. Não se repete.</p>
