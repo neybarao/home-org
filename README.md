@@ -18,7 +18,14 @@ Publicado em https://neybarao.github.io/home-org/ pelo GitHub Actions a cada pus
 - **Tarefa extra**: coisa que apareceu no dia (ex.: lavar o edredom), adicionada direto em Hoje. Não tem frequência e tem anel próprio em Progresso (Extras), fora do anel Pra hoje, do limite e da reorganização. Se não for feita, aparece em "Ficou pra trás".
 - **Pular**: nos detalhes de uma tarefa de Pra hoje ou Ficou pra trás, "Pular hoje" tira ela da contagem (ex.: não tinha lixo para tirar). Ela fica apagada no fim da lista e dá para desfazer.
 - Tocar numa tarefa em **Hoje** abre os **detalhes**: nota, quando, frequência, quem cuida e quem está com ela, com os botões de marcar como feita, assumir, editar e apagar.
+- **Conquistas**: 20 selos para o casal, em cinco grupos (Primeiros passos, Sequência, Constância, Mãos à obra e Ritmo da casa). Quando vocês ganham uma, ela aparece assim que o app abre, uma de cada vez. A galeria fica em **Progresso**: as ganhas coloridas com a data, as que faltam em cinza com quanto falta. "Dia pleno" é o dia com 100% do Pra hoje e do Fechamento. As de sequência seguem a regra da casa de não punir: dia sem nada planejado não quebra, a galeria mostra a melhor sequência (não um contador que zera) e conquista ganha nunca some.
 - **Tarefas da casa** começa com uma sugestão de rotina e tudo é editável.
+
+### Conquistas por dentro
+
+- As regras ficam em `src/lib/badges.ts` (lista, metas e cálculo) e os desenhos em `src/components/BadgeArt.tsx` (SVG, só cores da marca). Para criar uma conquista nova, acrescente uma linha em `BADGES`, um tema em `THEMES` e uma ilustração em `ART`.
+- Tudo sai do histórico que os dois celulares já dividem, então não tem tabela nova no banco. Cada celular guarda no localStorage (`home-org:badges`) as que já ganhou e as que já comemorou.
+- Antes da primeira leitura do Supabase o app não comemora nada, para os dados de exemplo não liberarem conquistas.
 
 ## Estado atual
 

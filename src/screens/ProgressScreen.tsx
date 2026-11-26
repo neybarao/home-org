@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { BadgesCard } from '../components/Badges'
 import { Icon } from '../components/Icon'
 import { Rings } from '../components/Rings'
 import { Avatar, Card, SectionTitle } from '../components/ui'
@@ -142,6 +143,10 @@ export function ProgressScreen({ today }: { today: ISODate }) {
       </div>
 
       <div {...enter(2)}>
+      <BadgesCard today={today} />
+      </div>
+
+      <div {...enter(3)}>
       <DayDetail key={selected} dayName={dayName} done={day.done} missed={day.missed} empty={day.empty} />
       </div>
     </div>
