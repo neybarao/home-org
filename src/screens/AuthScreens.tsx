@@ -40,19 +40,30 @@ function useSubmit<A extends unknown[]>(fn: (...args: A) => Promise<void>) {
   return { busy, error, run }
 }
 
-export function SignInScreen({ onSend }: { onSend: (email: string) => Promise<void> }) {
+export function SignInScreen({
+  onSignIn,
+  onSignUp,
+}: {
+  onSignIn: (email: string, password: string) => Promise<void>
+  onSignUp: (email: string, password: string) => Promise<void>
+}) {
+  const [mode, setMode] = useState<'in' | 'up'>('in')
   const [email, setEmail] = useState('')
-  const { busy, error, run } = useSubmit(onSend)
+  const [password, setPassword] = useState('')
+  const { busy, error, run } = useSubmit(mode === 'in' ? onSignIn : onSignUp)
   const submit = (e: FormEvent) => {
     e.preventDefault()
-    if (email.trim()) void run(email)
+    if (email.trim() && password) void run(email, password)
   }
+  const up = mode === 'up'
   return (
-    <Shell title="Entrar no Dia">
-      <p className="mt-3 text-[17px] text-muted">Mandamos um link para o seu e-mail. É só tocar nele para entrar, sem senha.</p>
+    <Shell title={up ? 'Criar conta no Dia' : 'Entrar no Dia'}>
+      <p className="mt-3 text-[17px] text-muted">
+        {up ? 'Cada um cria a própria conta uma vez. Depois o app fica conectado neste celular.' : 'Use o e-mail e a senha que você criou.'}
+      </p>
       <form onSubmit={submit} className="mt-8">
         <label className="block">
-          <span className="px-1 text-[13px] font-medium text-muted">Seu e-mail</span>
+          <span className="px-1 text-[13px] font-medium text-muted">E-mail</span>
           <input
             type="email"
             inputMode="email"
@@ -65,72 +76,25 @@ export function SignInScreen({ onSend }: { onSend: (email: string) => Promise<vo
             placeholder="voce@exemplo.com"
           />
         </label>
-        <ErrorText>{error}</ErrorText>
-        <button type="submit" disabled={busy} className={`${primary} mt-6`}>
-          {busy ? 'Enviando…' : 'Mandar link'}
-        </button>
-      </form>
-    </Shell>
-  )
-}
-
-export function CheckEmailScreen({
-  email,
-  onResend,
-  onCode,
-  onBack,
-}: {
-  email: string
-  onResend: (email: string) => Promise<void>
-  onCode: (email: string, code: string) => Promise<void>
-  onBack: () => void
-}) {
-  const [code, setCode] = useState('')
-  const [resent, setResent] = useState(false)
-  const resend = useSubmit(async () => {
-    await onResend(email)
-    setResent(true)
-  })
-  const verify = useSubmit(onCode)
-  const digits = code.replace(/\D/g, '')
-  const submit = (e: FormEvent) => {
-    e.preventDefault()
-    if (digits.length >= 6) void verify.run(email, digits)
-  }
-  return (
-    <Shell title="Confira o seu e-mail">
-      <p className="mt-3 text-[17px] text-muted">
-        Mandamos um link para <span className="font-semibold text-ink">{email}</span>. Abra o e-mail neste celular e toque no link. Se não
-        aparecer, olhe no spam.
-      </p>
-
-      <form onSubmit={submit} className="mt-8">
-        <label className="block">
-          <span className="px-1 text-[13px] font-medium text-muted">Se o e-mail tiver um código, digite aqui</span>
+        <label className="mt-4 block">
+          <span className="px-1 text-[13px] font-medium text-muted">{up ? 'Crie uma senha (mínimo 6 caracteres)' : 'Senha'}</span>
           <input
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            maxLength={10}
-            className={`${field} tabular tracking-[0.2em]`}
-            placeholder="000000"
+            type="password"
+            autoComplete={up ? 'new-password' : 'current-password'}
+            required
+            minLength={6}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className={field}
           />
         </label>
-        <ErrorText>{verify.error}</ErrorText>
-        {digits.length >= 6 && (
-          <button type="submit" disabled={verify.busy} className={`${primary} mt-4`}>
-            {verify.busy ? 'Conferindo…' : 'Entrar com o código'}
-          </button>
-        )}
+        <ErrorText>{error}</ErrorText>
+        <button type="submit" disabled={busy} className={`${primary} mt-6`}>
+          {busy ? (up ? 'Criando…' : 'Entrando…') : up ? 'Criar conta' : 'Entrar'}
+        </button>
       </form>
-
-      <ErrorText>{resend.error}</ErrorText>
-      <button onClick={() => void resend.run()} disabled={resend.busy} className={`${secondary} mt-6`}>
-        {resend.busy ? 'Enviando…' : resent ? 'Mandamos de novo' : 'Mandar outro link'}
-      </button>
-      <button onClick={onBack} className={secondary}>
-        Usar outro e-mail
+      <button type="button" onClick={() => setMode(up ? 'in' : 'up')} className={`${secondary} mt-2`}>
+        {up ? 'Já tenho conta' : 'Primeira vez? Criar conta'}
       </button>
     </Shell>
   )
@@ -148,7 +112,7 @@ export function WaitingScreen({ email, onSignOut }: { email: string; onSignOut: 
         <span className="text-[15px]">Aguardando liberação</span>
       </div>
       <button onClick={onSignOut} className={`${secondary} mt-6`}>
-        Sair e usar outro e-mail
+        Sair e entrar com outra conta
       </button>
     </Shell>
   )
@@ -162,7 +126,7 @@ export function AuthErrorScreen({ message, onRetry, onRestart }: { message: stri
         Tentar de novo
       </button>
       <button onClick={onRestart} className={`${secondary} mt-2`}>
-        Pedir um novo link
+        Voltar para o login
       </button>
     </Shell>
   )
