@@ -245,7 +245,7 @@ function NotificationsSection({ me }: { me: Person }) {
       content = (
         <>
           <p className="text-[14px] text-muted">
-            Receba um aviso quando {other} assumir ou soltar uma tarefa e um lembrete com as tarefas do dia.
+            Receba um aviso quando {other} assumir, soltar ou te passar uma tarefa, e um lembrete com as tarefas do dia.
           </p>
           <button
             disabled={busy}
@@ -278,8 +278,8 @@ function NotificationsSection({ me }: { me: Person }) {
         <>
           <label className="flex items-center justify-between gap-4">
             <span>
-              <span className="block font-semibold">Quando {other} assumir ou soltar</span>
-              <span className="block text-[13px] text-muted">Avisa na hora, com o nome da tarefa.</span>
+              <span className="block font-semibold">Quando {other} mexer nas tarefas</span>
+              <span className="block text-[13px] text-muted">Assumir, soltar ou colocar uma tarefa com você. Avisa na hora.</span>
             </span>
             <Switch checked={row.notify_claims} onChange={(v) => void patch({ notify_claims: v })} />
           </label>

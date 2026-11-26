@@ -3,6 +3,7 @@
 //   {type:'vapid'}                    -> chave pública (o app precisa dela para se inscrever)
 //   {type:'test'} + login do app      -> manda um aviso de teste para os celulares da pessoa
 //   {type:'claim'} + x-dia-secret     -> gatilho do banco: alguém assumiu ou soltou uma tarefa
+//   {type:'assigned'} + x-dia-secret  -> gatilho do banco: tarefa colocada no nome do outro
 //   {type:'reminders'} + x-dia-secret -> pg_cron: lembrete do dia de quem chegou no horário
 //
 // Cópias de src/lib (dates, schedule, types) ficam em ./lib. Ao mudar a lógica de agenda
@@ -172,6 +173,19 @@ async function handleClaim(body: { actor: Person; kind: 'assumiu' | 'soltou'; ke
   return { sent: await send(subs as Sub[], { ...msg, tag: `claim-${body.key}` }) }
 }
 
+async function handleAssigned(body: { to: Person; by: Person; templateId: string }) {
+  const { data: t } = await admin.from('templates').select('title, frequency').eq('id', body.templateId).maybeSingle()
+  if (!t) return { sent: 0 }
+  const { data: subs } = await admin.from('push_subscriptions').select('*').eq('person', body.to).eq('notify_claims', true)
+  if (!subs?.length) return { sent: 0 }
+  const who = NAMES[body.by]
+  const extra = t.frequency?.kind === 'once'
+  const msg: Message = extra
+    ? { title: `${who} te passou uma tarefa extra`, body: t.title }
+    : { title: `${who} colocou uma tarefa com você`, body: t.title }
+  return { sent: await send(subs as Sub[], { ...msg, tag: `assign-${body.templateId}` }) }
+}
+
 async function handleReminders() {
   const { date, time } = nowInTZ()
   const { data } = await admin.from('push_subscriptions').select('*').eq('reminder_enabled', true)
@@ -215,6 +229,7 @@ Deno.serve(async (req) => {
     if (body.type === 'test') return await handleTest(req)
     if (req.headers.get('x-dia-secret') !== c.hook_secret) return json({ error: 'não autorizado' }, 401)
     if (body.type === 'claim') return json(await handleClaim(body))
+    if (body.type === 'assigned') return json(await handleAssigned(body))
     if (body.type === 'reminders') return json(await handleReminders())
     return json({ error: 'tipo desconhecido' }, 400)
   } catch (e) {

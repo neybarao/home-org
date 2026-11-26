@@ -50,7 +50,7 @@ Os arquivos ficam em `supabase/`. Passo a passo para criar:
 
 ### Notificações push
 
-- `supabase/push.sql`: tabela `push_subscriptions`, gatilho em `occurrences` (avisa o outro quando alguém assume ou solta uma tarefa) e o pg_cron que a cada 5 minutos confere quem chegou no horário do lembrete do dia.
+- `supabase/push.sql`: tabela `push_subscriptions`, gatilho em `occurrences` (avisa o outro quando alguém assume ou solta uma tarefa), gatilho em `templates` (avisa quando alguém cria uma tarefa extra ou coloca uma tarefa da rotina no nome do outro) e o pg_cron que a cada 5 minutos confere quem chegou no horário do lembrete do dia.
 - `supabase/functions/push`: a Edge Function que envia os avisos. Ela gera as chaves VAPID sozinha na primeira chamada e guarda no schema `private`. Publicada com `verify_jwt` desligado: o gatilho e o cron se identificam com um segredo gerado no banco, e o teste do app confere o login.
 - A função usa cópias de `src/lib` (agenda). Ao mudar essa lógica, rode `npm run push:lib` e publique a função de novo.
 - No app, em **Ajustes > Notificações**. No iPhone só funciona com o app instalado na tela inicial (iOS 16.4 ou mais novo).
