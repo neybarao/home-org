@@ -253,7 +253,7 @@ function SyncLine() {
         <span>{syncText(s)}</span>
       </p>
       {(s.state === 'error' || s.state === 'offline') && (
-        <button onClick={syncNow} className="pop mt-2 text-[14px] font-semibold text-ink underline underline-offset-4">
+        <button onClick={() => void syncNow()} className="pop mt-2 text-[14px] font-semibold text-ink underline underline-offset-4">
           Tentar agora
         </button>
       )}

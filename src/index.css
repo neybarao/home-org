@@ -109,6 +109,7 @@ body {
 
 body {
   min-height: 100dvh;
+  overscroll-behavior-y: contain; /* o puxar para atualizar é do app */
   background: radial-gradient(120% 70% at 50% 0%, var(--bg-top) 0%, var(--bg) 70%) fixed;
 }
 
