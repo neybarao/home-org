@@ -272,6 +272,11 @@ export const actions = {
     )
   },
 
+  /** Pula a tarefa (ex.: não tinha lixo). Sai da contagem; desfaz tocando de novo. */
+  toggleSkip(key: string, me: Person, today: string) {
+    patchOcc(key, (s) => (s.skippedBy ? { ...s, skippedBy: undefined, skippedOn: undefined } : { ...s, skippedBy: me, skippedOn: today }))
+  },
+
   applyMoves(moves: Move[]) {
     const occurrences = { ...data.occurrences }
     // Quem tinha assumido solta; se a tarefa tem dono, continua com ele.

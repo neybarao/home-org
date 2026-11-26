@@ -14,7 +14,7 @@ describe('conversão de ocorrências', () => {
   })
 
   it('ida e volta preserva o estado', () => {
-    for (const s of [{}, { claimedBy: null }, { claimedBy: 'ney' as const, doneBy: 'ney' as const, doneOn: '2026-11-25', plannedDate: '2026-11-26' }]) {
+    for (const s of [{}, { claimedBy: null }, { claimedBy: 'ney' as const, doneBy: 'ney' as const, doneOn: '2026-11-25', plannedDate: '2026-11-26' }, { skippedBy: 'cleide' as const, skippedOn: '2026-11-26' }]) {
       expect(rowToOcc(occToRow('k', s))).toEqual(s)
     }
   })

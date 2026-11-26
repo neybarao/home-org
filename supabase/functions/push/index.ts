@@ -129,6 +129,8 @@ async function loadHome(): Promise<HomeData> {
     else if (r.claimed_by) st.claimedBy = r.claimed_by
     if (r.done_by) st.doneBy = r.done_by
     if (r.done_on) st.doneOn = r.done_on
+    if (r.skipped_by) st.skippedBy = r.skipped_by
+    if (r.skipped_on) st.skippedOn = r.skipped_on
     occurrences[r.key] = st
   }
   return {
@@ -141,7 +143,7 @@ async function loadHome(): Promise<HomeData> {
 
 function reminderFor(home: HomeData, person: Person, today: string): Message | null {
   const view = dayView(home, today)
-  const pending = [...view.today, ...view.overdue].filter((i) => !i.occ.doneBy)
+  const pending = [...view.today, ...view.overdue].filter((i) => !i.occ.doneBy && !i.occ.skippedBy)
   const mine = pending.filter((i) => i.occ.claimedBy === person)
   const free = pending.filter((i) => !i.occ.claimedBy)
   if (mine.length === 0 && free.length === 0) return null

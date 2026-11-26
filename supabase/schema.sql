@@ -41,6 +41,10 @@ create table if not exists public.templates (
   updated_at timestamptz not null default now()
 );
 
+-- Tarefa pulada de propósito (sai da contagem).
+alter table public.occurrences add column if not exists skipped_by text check (skipped_by in ('ney', 'cleide'));
+alter table public.occurrences add column if not exists skipped_on date;
+
 -- Nota com mais detalhes da tarefa (opcional).
 alter table public.templates add column if not exists note text;
 

@@ -40,6 +40,9 @@ export interface OccurrenceState {
   claimedBy?: Person | null
   doneBy?: Person
   doneOn?: ISODate
+  /** Pulada de propósito (ex.: não tinha lixo para tirar). Sai da contagem. */
+  skippedBy?: Person
+  skippedOn?: ISODate
 }
 
 export interface Occurrence extends Omit<OccurrenceState, 'claimedBy'> {

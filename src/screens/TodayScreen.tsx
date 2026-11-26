@@ -5,7 +5,7 @@ import { Avatar, Card, SectionTitle, Switch } from '../components/ui'
 import { actions, useHome } from '../data/store'
 import { haptic, withTransition } from '../lib/motion'
 import { WEEKDAYS, longDate, relativeDay, weekday, type ISODate } from '../lib/dates'
-import { dayView, isClosing, isExtra, pickOne, suggestRedistribution, type DayItem } from '../lib/schedule'
+import { dayView, isClosing, isExtra, isOpen, pickOne, suggestRedistribution, type DayItem } from '../lib/schedule'
 import { PEOPLE, type Person } from '../lib/types'
 
 /** Um sim/não que vale só para o dia de hoje neste aparelho. */
@@ -71,19 +71,21 @@ export function TodayScreen({ me, today }: { me: Person; today: ISODate }) {
   const view = useMemo(() => dayView(data, today), [data, today])
   const suggestion = useMemo(() => suggestRedistribution(data, today, solo), [data, today, solo])
 
-  const regularToday = view.today.filter((i) => !i.task.special && !isClosing(i.task) && !isExtra(i.task))
-  const special = [...view.overdue, ...view.today].filter((i) => i.task.special)
+  const regularToday = view.today.filter((i) => !i.task.special && !isClosing(i.task) && !isExtra(i.task) && !i.occ.skippedBy)
+  const special = [...view.overdue, ...view.today].filter((i) => i.task.special && !i.occ.skippedBy)
   const overdue = view.overdue.filter((i) => !i.task.special && !isExtra(i.task))
   // Extras: as de hoje e as que ficaram pra trás, pendentes primeiro.
-  const extras = [...view.overdue, ...view.today].filter((i) => isExtra(i.task))
-  const extrasPending = extras.filter((i) => !i.occ.doneBy)
+  const extras = [...view.overdue, ...view.today].filter((i) => isExtra(i.task) && !i.occ.skippedBy)
+  const extrasPending = extras.filter((i) => isOpen(i.occ))
   const extrasDone = extras.filter((i) => i.occ.doneBy)
-  const closing = view.today.filter((i) => isClosing(i.task))
+  const closing = view.today.filter((i) => isClosing(i.task) && !i.occ.skippedBy)
   const closingDone = closing.filter((i) => i.occ.doneBy).length
-  const pendingToday = regularToday.filter((i) => !i.occ.doneBy)
+  const pendingToday = regularToday.filter((i) => isOpen(i.occ))
   const doneToday = regularToday.filter((i) => i.occ.doneBy)
+  // Puladas hoje: aparecem no fim, apagadas, para dar para desfazer.
+  const skippedToday = view.today.filter((i) => i.occ.skippedBy && !isClosing(i.task) && !isExtra(i.task))
   const show = (f: Exclude<Filter, 'todas'>) => filter === 'todas' || filter === f
-  const nothingLeft = pendingToday.length === 0 && overdue.length === 0 && special.every((i) => i.occ.doneBy)
+  const nothingLeft = pendingToday.length === 0 && overdue.length === 0 && special.every((i) => !isOpen(i.occ))
 
   return (
     <div>
@@ -188,7 +190,7 @@ export function TodayScreen({ me, today }: { me: Person; today: ISODate }) {
           withTransition(() => setFilter(f))
         }}
         counts={{
-          hoje: pendingToday.length + overdue.length + special.filter((i) => !i.occ.doneBy).length,
+          hoje: pendingToday.length + overdue.length + special.filter((i) => isOpen(i.occ)).length,
           extras: extrasPending.length,
           fechamento: closing.length - closingDone,
         }}
@@ -219,6 +221,9 @@ export function TodayScreen({ me, today }: { me: Person; today: ISODate }) {
           </li>
         )}
         {doneToday.map((i) => (
+          <TaskRow key={i.occ.key} item={i} me={me} today={today} />
+        ))}
+        {skippedToday.map((i) => (
           <TaskRow key={i.occ.key} item={i} me={me} today={today} />
         ))}
       </TaskSection>

@@ -46,6 +46,8 @@ export function dayProgress(data: HomeData, date: ISODate, today: ISODate): DayP
 
   for (const occ of occs) {
     const task = map.get(occ.templateId)!
+    // Pulada de propósito não conta em lugar nenhum.
+    if (occ.skippedBy) continue
     const doneHere = occ.doneOn === date
     const plannedHere = occ.plannedDate === date
     if (!doneHere && !plannedHere) continue
@@ -86,7 +88,7 @@ export function weekProgress(data: HomeData, date: ISODate): Ring {
   let total = 0
   for (const occ of occs) {
     const t = map.get(occ.templateId)!
-    if (!carriesOver(t) || isExtra(t)) continue
+    if (!carriesOver(t) || isExtra(t) || occ.skippedBy) continue
     total++
     if (occ.doneBy) done++
   }

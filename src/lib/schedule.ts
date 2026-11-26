@@ -1,5 +1,5 @@
 import { addDays, daysBetween, endOfWeek, rangeISO, startOfWeek, weekOfMonth, weekday, type ISODate } from './dates'
-import type { Frequency, HomeData, Move, Occurrence, Person, TaskTemplate } from './types'
+import type { Frequency, HomeData, Move, Occurrence, OccurrenceState, Person, TaskTemplate } from './types'
 
 const BIWEEKLY_ANCHOR = '2026-01-05' // uma segunda-feira qualquer, só para definir semanas pares e ímpares
 
@@ -20,6 +20,11 @@ export function occursOn(freq: Frequency, date: ISODate): boolean {
     case 'once':
       return date === freq.date
   }
+}
+
+/** Ainda por fazer: nem feita, nem pulada. */
+export function isOpen(s: OccurrenceState): boolean {
+  return !s.doneBy && !s.skippedBy
 }
 
 /** Tarefa extra: de uma vez só, criada direto em Hoje. Conta no dia, mas fora do limite e da reorganização. */
@@ -89,9 +94,9 @@ export function dayView(data: HomeData, today: ISODate): DayView {
   const overdue: DayItem[] = []
   for (const occ of occs) {
     const task = map.get(occ.templateId)!
-    if (occ.doneOn === today || (occ.plannedDate === today && !occ.doneBy)) {
+    if (occ.doneOn === today || occ.skippedOn === today || (occ.plannedDate === today && isOpen(occ))) {
       todayItems.push({ occ, task })
-    } else if (!occ.doneBy && occ.plannedDate < today && carriesOver(task)) {
+    } else if (isOpen(occ) && occ.plannedDate < today && carriesOver(task)) {
       overdue.push({ occ, task })
     }
   }
@@ -104,7 +109,7 @@ export function loadByDay(data: HomeData, days: ISODate[]): Map<ISODate, number>
   if (days.length === 0) return load
   const map = new Map(data.templates.map((t) => [t.id, t]))
   for (const occ of buildOccurrences(data, data.settings.startDate, days[days.length - 1])) {
-    if (occ.doneBy || !load.has(occ.plannedDate)) continue
+    if (!isOpen(occ) || !load.has(occ.plannedDate)) continue
     const t = map.get(occ.templateId)!
     if (!isRegular(t) || isExtra(t)) continue
     load.set(occ.plannedDate, load.get(occ.plannedDate)! + 1)
@@ -141,7 +146,7 @@ export function suggestRedistribution(data: HomeData, today: ISODate, solo: bool
   const view = dayView(data, today)
   const capacity = data.settings.dailyLimit * (solo ? 1 : 2)
   // Tarefa extra entra na contagem do dia, mas não no limite combinado nem na reorganização.
-  const pending = [...view.overdue, ...view.today].filter((i) => !i.occ.doneBy && isRegular(i.task) && !isExtra(i.task))
+  const pending = [...view.overdue, ...view.today].filter((i) => isOpen(i.occ) && isRegular(i.task) && !isExtra(i.task))
   if (pending.length <= capacity) return null
 
   const claimedOnPurpose = (i: DayItem) => !!data.occurrences[i.occ.key]?.claimedBy
@@ -171,7 +176,7 @@ export function suggestRedistribution(data: HomeData, today: ISODate, solo: bool
 export function pickOne(data: HomeData, today: ISODate, me: Person, skip = 0): DayItem | null {
   const view = dayView(data, today)
   const pending = [...view.overdue, ...view.today].filter(
-    (i) => !i.occ.doneBy && isRegular(i.task) && (!i.occ.claimedBy || i.occ.claimedBy === me),
+    (i) => isOpen(i.occ) && isRegular(i.task) && (!i.occ.claimedBy || i.occ.claimedBy === me),
   )
   if (pending.length === 0) return null
   const mineFirst = (a: DayItem, b: DayItem) => (a.occ.claimedBy === me ? 0 : 1) - (b.occ.claimedBy === me ? 0 : 1) || byPriority(a, b)
