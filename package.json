@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "push:lib": "for f in dates schedule types; do sed -E \"s#from '\\./(dates|types|schedule)'#from './\\1.ts'#g\" src/lib/$f.ts > supabase/functions/push/lib/$f.ts; done"
   },
   "dependencies": {
     "@fontsource-variable/onest": "^5.3.1",

@@ -35,6 +35,8 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // Recebe e mostra as notificações push.
+        importScripts: ['push-sw.js'],
       },
     }),
   ],
