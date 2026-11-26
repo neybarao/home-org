@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Icon } from '../components/Icon'
 import { TaskRow } from '../components/TaskRow'
 import { Avatar, Card, SectionTitle, Switch } from '../components/ui'
@@ -47,6 +47,14 @@ export function TodayScreen({ me, today }: { me: Person; today: ISODate }) {
   const [solo, setSolo] = useDailyFlag('home-org:solo', today)
   const [dismissed, setDismissed] = useDailyFlag('home-org:dismissed', today)
   const [justMoved, setJustMoved] = useState<number | null>(null)
+  const [extraOpen, setExtraOpen] = useState(false)
+  const extraRef = useRef<HTMLLIElement>(null)
+  const openExtra = () => {
+    haptic()
+    withTransition(() => setExtraOpen(true))
+    // O formulário fica no fim de "Pra hoje"; rola até ele.
+    window.setTimeout(() => extraRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50)
+  }
 
   const view = useMemo(() => dayView(data, today), [data, today])
   const suggestion = useMemo(() => suggestRedistribution(data, today, solo), [data, today, solo])
@@ -67,7 +75,12 @@ export function TodayScreen({ me, today }: { me: Person; today: ISODate }) {
         <span className="glass-btn rounded-full p-1" aria-label={`Usando como ${PEOPLE[me].name}`}>
           <Avatar person={me} size={48} />
         </span>
-        <span className="glass-btn rounded-full px-4 py-2.5 text-[14px] font-medium">{longDate(today)}</span>
+        <span className="flex items-center gap-2">
+          <span className="glass-btn rounded-full px-4 py-2.5 text-[14px] font-medium">{longDate(today)}</span>
+          <button onClick={openExtra} aria-label="Adicionar tarefa extra" className="pop grid size-11 place-items-center rounded-full bg-solid text-on-solid">
+            <Icon name="plus" size={20} />
+          </button>
+        </span>
       </div>
       </header>
 
@@ -177,7 +190,7 @@ export function TodayScreen({ me, today }: { me: Person; today: ISODate }) {
         {doneToday.map((i) => (
           <TaskRow key={i.occ.key} item={i} me={me} today={today} />
         ))}
-        <AddExtra me={me} today={today} />
+        <AddExtra me={me} today={today} open={extraOpen} setOpen={setExtraOpen} innerRef={extraRef} onOpen={openExtra} />
       </TaskSection>
 
       {closing.length > 0 && (
@@ -251,8 +264,21 @@ function TaskSection({
 }
 
 /** Tarefa extra: coisa que apareceu no dia (ex.: lavar o edredom). Sem frequência, fora do limite. */
-function AddExtra({ me, today }: { me: Person; today: ISODate }) {
-  const [open, setOpen] = useState(false)
+function AddExtra({
+  me,
+  today,
+  open,
+  setOpen,
+  innerRef,
+  onOpen,
+}: {
+  me: Person
+  today: ISODate
+  open: boolean
+  setOpen: (v: boolean) => void
+  innerRef: React.Ref<HTMLLIElement>
+  onOpen: () => void
+}) {
   const [title, setTitle] = useState('')
   const [who, setWho] = useState<Person | ''>('')
   const other: Person = me === 'ney' ? 'cleide' : 'ney'
@@ -261,10 +287,7 @@ function AddExtra({ me, today }: { me: Person; today: ISODate }) {
     return (
       <li>
         <button
-          onClick={() => {
-            haptic()
-            withTransition(() => setOpen(true))
-          }}
+          onClick={onOpen}
           style={{ viewTransitionName: 'add-extra' }}
           className="pop flex w-full items-center gap-3 rounded-[26px] py-3 pr-4 pl-2 text-left text-muted ring-1 ring-line ring-inset"
         >
@@ -291,7 +314,7 @@ function AddExtra({ me, today }: { me: Person; today: ISODate }) {
     `pop h-10 rounded-full px-4 text-[14px] font-semibold ${active ? 'bg-solid text-on-solid' : 'bg-white/80 ring-1 ring-black/5 dark:bg-white/[0.08] dark:ring-white/10'}`
 
   return (
-    <li style={{ viewTransitionName: 'add-extra' }} className="rise glass rounded-[26px] p-3">
+    <li ref={innerRef} style={{ viewTransitionName: 'add-extra' }} className="rise glass rounded-[26px] p-3">
       <form
         onSubmit={(e) => {
           e.preventDefault()
