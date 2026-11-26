@@ -160,3 +160,45 @@ revoke all on function public.push_run_reminders() from public, anon, authentica
 
 select cron.unschedule('dia-lembretes') where exists (select 1 from cron.job where jobname = 'dia-lembretes');
 select cron.schedule('dia-lembretes', '*/5 * * * *', 'select public.push_run_reminders()');
+
+-- ---------- Aviso quando uma tarefa é colocada no nome de alguém ----------
+-- Tarefa extra criada para o outro, ou tarefa da rotina que passou a ter o outro como dono.
+-- Quem fez a mudança vem do login (auth.uid()); quem coloca no próprio nome não recebe aviso.
+
+create or replace function public.push_on_assign()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  by_ text;
+  secret text;
+begin
+  if new.owner is null or not new.active then
+    return new;
+  end if;
+  if tg_op = 'UPDATE' and new.owner is not distinct from old.owner then
+    return new;
+  end if;
+  select m.person into by_ from public.members m where m.user_id = auth.uid();
+  if by_ is null or by_ = new.owner then
+    return new;
+  end if;
+
+  select c.hook_secret into secret from private.push_config c where c.id = 1;
+  perform net.http_post(
+    url := 'https://rzzfikycurkgvolnjuif.supabase.co/functions/v1/push',
+    headers := jsonb_build_object('Content-Type', 'application/json', 'x-dia-secret', secret),
+    body := jsonb_build_object('type', 'assigned', 'to', new.owner, 'by', by_, 'templateId', new.id),
+    timeout_milliseconds := 30000
+  );
+  return new;
+end;
+$$;
+
+revoke all on function public.push_on_assign() from public, anon, authenticated;
+
+drop trigger if exists templates_push on public.templates;
+create trigger templates_push after insert or update on public.templates
+  for each row execute function public.push_on_assign();
