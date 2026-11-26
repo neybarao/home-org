@@ -35,7 +35,7 @@ export default defineConfig({
         short_name: 'Dia',
         description: 'Tarefas da casa divididas ao longo da semana.',
         lang: 'pt-BR',
-        theme_color: '#eee9df',
+        theme_color: '#f7f4ee',
         background_color: '#eee9df',
         display: 'standalone',
         start_url: '/home-org/',

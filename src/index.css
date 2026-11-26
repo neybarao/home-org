@@ -103,7 +103,7 @@
 
 html,
 body {
-  background: var(--bg);
+  background: var(--bg-top);
   color: var(--ink);
   font-family: var(--font-sans);
   -webkit-tap-highlight-color: transparent;
@@ -112,7 +112,23 @@ body {
 body {
   min-height: 100dvh;
   overscroll-behavior-y: contain; /* o puxar para atualizar é do app */
-  background: radial-gradient(120% 70% at 50% 0%, var(--bg-top) 0%, var(--bg) 70%) fixed;
+  background: transparent;
+}
+
+/*
+ * Fundo da página preso na tela (o iPhone ignora background-attachment: fixed).
+ * A borda de cima é toda da mesma cor (--bg-top), igual à theme-color, para a
+ * área da barra de status emendar com o app sem corte, mesmo rolando.
+ */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 60% at 50% 0%, var(--bg-top) 0%, transparent 70%),
+    linear-gradient(to bottom, var(--bg-top) 0%, var(--bg) 45%);
 }
 
 /* Cartões: vidro fosco discreto. */

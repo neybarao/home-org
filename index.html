@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#eee9df" />
+    <meta name="theme-color" content="#f7f4ee" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Dia" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -15,6 +15,7 @@
         var c = localStorage.getItem('home-org:theme')
         var dark = c === 'dark' || (c !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)
         document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+        document.querySelector('meta[name="theme-color"]').setAttribute('content', dark ? '#2c3b4d' : '#f7f4ee')
       } catch (e) {}
     </script>
     <title>Dia</title>

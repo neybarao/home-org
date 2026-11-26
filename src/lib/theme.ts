@@ -18,7 +18,8 @@ export function loadTheme(): ThemeChoice {
 export function applyTheme(choice: ThemeChoice) {
   const dark = choice === 'dark' || (choice === 'system' && media().matches)
   document.documentElement.dataset.theme = dark ? 'dark' : 'light'
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#1b2632' : '#eee9df')
+  // Mesma cor do topo do fundo (--bg-top), para a barra de status emendar com o app.
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#2c3b4d' : '#f7f4ee')
 }
 
 /** Tema escolhido neste aparelho. "Sistema" segue o celular. */
