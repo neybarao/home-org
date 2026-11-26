@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { actions } from '../data/store'
-import { WEEKDAYS_SHORT } from '../lib/dates'
+import { WEEKDAYS_SHORT, todayISO } from '../lib/dates'
 import { PEOPLE, type Frequency, type Person, type TaskTemplate } from '../lib/types'
 import { Icon } from './Icon'
 import { Segmented, Switch } from './ui'
 
 const ORDER = [1, 2, 3, 4, 5, 6, 0] // segunda a domingo
 
-type Kind = Exclude<Frequency['kind'], 'once'>
+// 'extra' = tarefa de uma vez, só pra hoje (frequência 'once').
+type Kind = Exclude<Frequency['kind'], 'once'> | 'extra'
 
 export function TaskEditor({ task, rooms, onClose }: { task: TaskTemplate | null; rooms: string[]; onClose: () => void }) {
   const [title, setTitle] = useState(task?.title ?? '')
@@ -41,6 +42,10 @@ export function TaskEditor({ task, rooms, onClose }: { task: TaskTemplate | null
 
   const save = () => {
     if (!title.trim()) return setError('Dê um nome para a tarefa.')
+    if (kind === 'extra') {
+      actions.addExtra(title, todayISO(), owner || undefined)
+      return onClose()
+    }
     if (!room.trim()) return setError('Diga em que parte da casa ela fica.')
     if (kind !== 'daily' && weekdays.length === 0) return setError('Escolha pelo menos um dia da semana.')
     let frequency: Frequency
@@ -95,6 +100,7 @@ export function TaskEditor({ task, rooms, onClose }: { task: TaskTemplate | null
           <input value={title} onChange={(e) => setTitle(e.target.value)} className={field} placeholder="Ex.: Limpar o fogão" />
         </label>
 
+        {kind !== 'extra' && (
         <label className="mt-4 block">
           <span className={label}>Parte da casa</span>
           <input value={room} onChange={(e) => setRoom(e.target.value)} list="rooms" className={field} placeholder="Ex.: Sala e cozinha" />
@@ -104,6 +110,7 @@ export function TaskEditor({ task, rooms, onClose }: { task: TaskTemplate | null
             ))}
           </datalist>
         </label>
+        )}
 
         <div className="mt-5">
           <p className={label}>Com que frequência</p>
@@ -118,12 +125,17 @@ export function TaskEditor({ task, rooms, onClose }: { task: TaskTemplate | null
                 ['weekly', 'Toda semana'],
                 ['biweekly', 'A cada 15 dias'],
                 ['monthly', 'Uma vez por mês'],
+                ...(task ? [] : [['extra', 'Só hoje (extra)'] as const]),
               ]}
             />
           </div>
         </div>
 
-        {kind !== 'daily' && (
+        {kind === 'extra' && (
+          <p className="mt-2 px-1 text-[13px] text-muted">Aparece em Hoje, conta no dia e fica fora do limite. Não se repete.</p>
+        )}
+
+        {kind !== 'daily' && kind !== 'extra' && (
           <div className="mt-5">
             <p className={label}>{kind === 'weekly' ? 'Em quais dias' : 'Em que dia da semana'}</p>
             <div className="mt-2">
@@ -156,6 +168,7 @@ export function TaskEditor({ task, rooms, onClose }: { task: TaskTemplate | null
           </p>
         </div>
 
+        {kind !== 'extra' && (
         <div className="glass mt-5 divide-y divide-line rounded-[24px]">
           <Toggle label="Importante" hint="Vai primeiro quando o dia estiver cheio." checked={important} onChange={setImportant} />
           {kind === 'daily' && (
@@ -166,6 +179,7 @@ export function TaskEditor({ task, rooms, onClose }: { task: TaskTemplate | null
           )}
           {task && <Toggle label="Ativa" hint="Desligue para pausar sem apagar." checked={active} onChange={setActive} />}
         </div>
+        )}
 
         {error && (
           <p role="alert" className="mt-4 px-1 font-semibold text-late">
@@ -174,7 +188,7 @@ export function TaskEditor({ task, rooms, onClose }: { task: TaskTemplate | null
         )}
 
         <button onClick={save} className="pop mt-6 h-14 w-full rounded-full bg-solid text-[16px] font-semibold text-on-solid">
-          {task ? 'Salvar alterações' : 'Criar tarefa'}
+          {task ? 'Salvar alterações' : kind === 'extra' ? 'Adicionar em Hoje' : 'Criar tarefa'}
         </button>
         {task && (
           <button onClick={remove} className="mt-2 h-12 w-full rounded-full font-semibold text-muted">
