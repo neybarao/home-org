@@ -15,7 +15,7 @@ Publicado em https://neybarao.github.io/home-org/ pelo GitHub Actions a cada pus
 - **Por onde começo?** mostra uma tarefa só: primeiro as suas, depois as livres, importantes e mais antigas na frente.
 - Cada tarefa pode ter um **dono fixo**. Ela já aparece como dele, mas dá pra passar pro outro no dia.
 - **Progresso** mostra dois anéis por dia, no estilo do Fitness: "Pra hoje" e "Fechamento". A semana aparece em mini anéis e, abaixo, o que foi feito em cada dia e por quem. Não tem placar entre os dois nem sequência que zera.
-- **Tarefa extra**: coisa que apareceu no dia (ex.: lavar o edredom), adicionada direto em Hoje. Não tem frequência, conta no dia e no anel, mas fica fora do limite e da reorganização. Se não for feita, aparece em "Ficou pra trás".
+- **Tarefa extra**: coisa que apareceu no dia (ex.: lavar o edredom), adicionada direto em Hoje. Não tem frequência e tem anel próprio em Progresso (Extras), fora do anel Pra hoje, do limite e da reorganização. Se não for feita, aparece em "Ficou pra trás".
 - Tocar numa tarefa em **Hoje** abre os **detalhes**: nota, quando, frequência, quem cuida e quem está com ela, com os botões de marcar como feita, assumir, editar e apagar.
 - **Tarefas da casa** começa com uma sugestão de rotina e tudo é editável.
 

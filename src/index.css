@@ -60,6 +60,7 @@
   --ring-1: #ffb162;
   --on-ring-1: #1b2632;
   --ring-2: #d4806a;
+  --ring-3: #9fb2c8;
   color-scheme: light;
 }
 
@@ -96,6 +97,7 @@
   --ring-1: #ffb162;
   --on-ring-1: #1b2632;
   --ring-2: #d4806a;
+  --ring-3: #9fb2c8;
   color-scheme: dark;
 }
 

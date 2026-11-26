@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 
 /**
- * Anéis do dia, no espírito do app Fitness: o de fora é "Pra hoje", o de
- * dentro é "Fechamento". Cada anel enche até fechar e para ali (não dá volta).
+ * Anéis do dia, no espírito do app Fitness: de fora para dentro, "Pra hoje",
+ * "Fechamento" e "Extras". Cada anel enche até fechar e para ali (não dá volta).
  */
 export function Rings({
   values,
@@ -14,8 +14,8 @@ export function Rings({
   delay = 0,
   label,
 }: {
-  /** De 0 a 1, de fora para dentro. */
-  values: [number, number]
+  /** De 0 a 1, de fora para dentro: Pra hoje, Fechamento, Extras. */
+  values: number[]
   size: number
   stroke: number
   gap?: number
@@ -27,15 +27,15 @@ export function Rings({
   label?: string
 }) {
   // Começa vazio e enche no primeiro quadro, para a transição de CSS rodar.
-  const [shown, setShown] = useState(animate ? [0, 0] : values)
+  const [shown, setShown] = useState(animate ? values.map(() => 0) : values)
   useEffect(() => {
     if (!animate) return setShown(values)
     const id = requestAnimationFrame(() => setShown(values))
     return () => cancelAnimationFrame(id)
-  }, [animate, values[0], values[1]]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [animate, values.join()]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const c = size / 2
-  const colors = ['var(--ring-1)', 'var(--ring-2)']
+  const colors = ['var(--ring-1)', 'var(--ring-2)', 'var(--ring-3)'].slice(0, values.length)
   // Quando algum anel fecha, a figura dá um pulinho depois de terminar de encher.
   const closed = !dim && shown.some((v) => v >= 1)
   return (
