@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Icon } from './components/Icon'
+import { PullToRefresh } from './components/PullToRefresh'
 import { Avatar } from './components/ui'
 import { useAuth } from './data/auth'
 import { loadMe, saveMe } from './data/repo'
@@ -94,6 +95,7 @@ function Main({
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-lg flex-col">
+      <PullToRefresh />
       <main className="flex-1 px-4 pt-[max(env(safe-area-inset-top),1.25rem)] pb-32">
         {tab === 'hoje' && <TodayScreen me={me} today={today} />}
         {tab === 'progresso' && <ProgressScreen today={today} />}

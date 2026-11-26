@@ -247,9 +247,10 @@ export function stopSync() {
   setStatus({ state: supabase ? 'connecting' : 'local' })
 }
 
-/** Tenta de novo agora (botão em Ajustes). */
-export function syncNow() {
+/** Lê tudo de novo agora (botão em Ajustes e puxar para atualizar). Resolve quando termina. */
+export function syncNow(): Promise<void> {
   if (active) queue(refresh)
+  return chain
 }
 
 // ---------- Ações ----------
