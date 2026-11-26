@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { BadgeCelebration } from './components/Badges'
 import { Icon } from './components/Icon'
 import { PullToRefresh } from './components/PullToRefresh'
 import { TaskDetailHost } from './components/TaskDetail'
@@ -95,6 +96,8 @@ function Main({
   return (
     <div className="mx-auto flex min-h-dvh max-w-lg flex-col">
       <PullToRefresh />
+      {/* Conquista nova aparece por cima de qualquer aba. */}
+      <BadgeCelebration today={today} />
       {/* A página entra com um fade curto; a navegação anima sozinha (sem View Transition). */}
       <main key={tab} className="tab-in flex-1 px-4 pt-[max(env(safe-area-inset-top),1.25rem)] pb-32">
         {tab === 'hoje' && (

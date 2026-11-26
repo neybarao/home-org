@@ -500,3 +500,110 @@ body {
     corner-shape: round;
   }
 }
+
+/* ---------- Conquistas ---------- */
+/* Ainda não conquistada: o mesmo desenho, sem cor. */
+.badge-locked {
+  filter: grayscale(1) contrast(0.9);
+  opacity: 0.4;
+}
+:root[data-theme='dark'] .badge-locked {
+  opacity: 0.32;
+}
+
+/* Raios girando atrás da conquista nova. */
+.badge-burst {
+  border-radius: 9999px;
+  background: repeating-conic-gradient(from 0deg, rgb(255 177 98 / 0.28) 0deg 10deg, transparent 10deg 24deg);
+  -webkit-mask: radial-gradient(circle, #000 30%, transparent 70%);
+  mask: radial-gradient(circle, #000 30%, transparent 70%);
+}
+.badge-confetti i {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  margin: -4px;
+  border-radius: 2px;
+  opacity: 0;
+  background: #ffb162;
+}
+.badge-confetti i:nth-child(3n + 1) {
+  background: #d4806a;
+  border-radius: 9999px;
+}
+.badge-confetti i:nth-child(3n + 2) {
+  background: #9fb2c8;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .badge-celebrate[open] {
+    animation: badge-card 420ms var(--spring) both;
+  }
+  .badge-celebrate[open]::backdrop {
+    animation: badge-fade 300ms ease-out both;
+  }
+  @keyframes badge-card {
+    from {
+      opacity: 0;
+      transform: translateY(24px) scale(0.92);
+    }
+  }
+  @keyframes badge-fade {
+    from {
+      opacity: 0;
+    }
+  }
+  .badge-burst {
+    animation:
+      badge-spin 14s linear infinite,
+      badge-fade 600ms ease-out both;
+  }
+  @keyframes badge-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .badge-pop {
+    animation: badge-pop 760ms var(--spring) 120ms both;
+  }
+  @keyframes badge-pop {
+    0% {
+      opacity: 0;
+      transform: scale(0.2) rotate(-18deg);
+    }
+    60% {
+      opacity: 1;
+      transform: scale(1.08) rotate(4deg);
+    }
+  }
+  .badge-confetti i {
+    animation: badge-confetti 1100ms var(--ease-out) calc(380ms + var(--d) * 60ms) both;
+  }
+  @keyframes badge-confetti {
+    0% {
+      opacity: 1;
+      transform: rotate(var(--a)) translateY(0) scale(0.4);
+    }
+    70% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      transform: rotate(var(--a)) translateY(-120px) rotate(200deg) scale(1);
+    }
+  }
+  .badge-text {
+    animation: enter 480ms var(--ease-out) 420ms both;
+  }
+  /* Na galeria, a conquista aberta flutua de leve. */
+  .badge-float {
+    animation: badge-float 3.2s ease-in-out infinite;
+  }
+  @keyframes badge-float {
+    50% {
+      transform: translateY(-6px);
+    }
+  }
+}

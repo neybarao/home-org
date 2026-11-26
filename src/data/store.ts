@@ -42,6 +42,14 @@ function setData(next: HomeData) {
   notify()
 }
 
+/**
+ * Os dados da tela já são da casa (e não os de exemplo)? Sem Supabase, sempre.
+ * Com ele, só depois da primeira leitura do banco neste celular.
+ */
+export function isHydrated(): boolean {
+  return !supabase || base !== null
+}
+
 function setBase(next: HomeData | null) {
   base = next
   saveBase(next)
