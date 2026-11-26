@@ -19,6 +19,7 @@ function friendly(e: unknown): string {
   if (!navigator.onLine) return 'Sem internet. Confira a conexão e tente de novo.'
   const msg = e && typeof e === 'object' && 'message' in e ? String((e as { message: unknown }).message) : String(e)
   if (/rate limit|too many|security purposes/i.test(msg)) return 'Muitos pedidos em pouco tempo. Espere um minuto e tente de novo.'
+  if (/signups? not allowed|signup.*disabled/i.test(msg)) return 'Criar conta está desligado no Supabase. Ligue "Allow new users to sign up" no painel.'
   if (/invalid login credentials/i.test(msg)) return 'E-mail ou senha incorretos.'
   if (/already registered|already been registered|already exists/i.test(msg)) return 'Este e-mail já tem conta. Toque em "Já tenho conta" e entre com a senha.'
   if (/password should be at least|weak password/i.test(msg)) return 'A senha precisa ter pelo menos 6 caracteres.'
