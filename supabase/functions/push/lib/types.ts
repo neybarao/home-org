@@ -12,6 +12,7 @@ export type Frequency =
   | { kind: 'weekly'; weekdays: number[] } // 0 = domingo
   | { kind: 'biweekly'; weekday: number }
   | { kind: 'monthly'; week: number; weekday: number } // ex.: 1º sábado do mês
+  | { kind: 'once'; date: ISODate } // tarefa extra: aparece só nesse dia, fora do planejamento
 
 export type Priority = 'alta' | 'normal'
 

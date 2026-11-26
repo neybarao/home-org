@@ -284,6 +284,20 @@ export const actions = {
     commit({ ...data, templates: exists ? data.templates.map((x) => (x.id === t.id ? t : x)) : [...data.templates, t] })
   },
 
+  /** Tarefa extra: de uma vez, só para o dia, fora do planejamento. */
+  addExtra(title: string, date: string, owner?: Person) {
+    const id = `extra-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
+    const t: TaskTemplate = { id, title: title.trim(), room: 'Extra', frequency: { kind: 'once', date }, priority: 'normal', special: false, active: true }
+    if (owner) t.owner = owner
+    commit({ ...data, templates: [...data.templates, t] })
+  },
+
+  /** Apaga a tarefa extra e o que foi marcado nela. */
+  removeExtra(id: string) {
+    const occurrences = Object.fromEntries(Object.entries(data.occurrences).filter(([k]) => !k.startsWith(`${id}@`)))
+    commit({ ...data, templates: data.templates.filter((x) => x.id !== id), occurrences })
+  },
+
   deleteTemplate(id: string) {
     commit({ ...data, templates: data.templates.filter((x) => x.id !== id) })
   },

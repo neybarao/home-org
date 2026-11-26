@@ -112,3 +112,20 @@ describe('dados de exemplo', () => {
     expect(dayView(d, SUNDAY).overdue.length).toBeGreaterThan(0)
   })
 })
+
+describe('tarefa extra', () => {
+  it('aparece só no dia, conta em Hoje e fica fora da reorganização', async () => {
+    const { demoData } = await import('./seed')
+    const { dayView, suggestRedistribution, isExtra } = await import('./schedule')
+    const base = demoData('2026-11-25')
+    const extra = { id: 'extra-1', title: 'Lavar o edredom', room: 'Extra', frequency: { kind: 'once' as const, date: '2026-11-26' }, priority: 'normal' as const, special: false, active: true }
+    const data = { ...base, templates: [...base.templates, extra] }
+    expect(isExtra(extra)).toBe(true)
+    expect(dayView(data, '2026-11-26').today.some((i) => i.task.id === 'extra-1')).toBe(true)
+    expect(dayView(data, '2026-11-25').today.some((i) => i.task.id === 'extra-1')).toBe(false)
+    // Não feita, vai para "Ficou pra trás" no dia seguinte.
+    expect(dayView(data, '2026-11-27').overdue.some((i) => i.task.id === 'extra-1')).toBe(true)
+    const s = suggestRedistribution(data, '2026-11-26', true)
+    expect(s?.moves.some((m) => m.item.task.id === 'extra-1') ?? false).toBe(false)
+  })
+})

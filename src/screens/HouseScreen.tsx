@@ -3,7 +3,7 @@ import { Icon } from '../components/Icon'
 import { TaskEditor } from '../components/TaskEditor'
 import { Card, SectionTitle } from '../components/ui'
 import { useHome } from '../data/store'
-import { describeFrequency, isClosing } from '../lib/schedule'
+import { describeFrequency, isClosing, isExtra } from '../lib/schedule'
 import { PEOPLE, type TaskTemplate } from '../lib/types'
 
 export function HouseScreen() {
@@ -12,7 +12,8 @@ export function HouseScreen() {
 
   const rooms = useMemo(() => {
     const groups = new Map<string, TaskTemplate[]>()
-    for (const t of data.templates) groups.set(t.room, [...(groups.get(t.room) ?? []), t])
+    // Tarefas extras (de uma vez) ficam só em Hoje.
+    for (const t of data.templates.filter((x) => !isExtra(x))) groups.set(t.room, [...(groups.get(t.room) ?? []), t])
     return [...groups.entries()].sort((a, b) => a[0].localeCompare(b[0], 'pt-BR'))
   }, [data.templates])
 
