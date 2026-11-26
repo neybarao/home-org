@@ -201,7 +201,7 @@ function AccountSection({ me, email, onSignOut }: { me: Person; email: string; o
         <button
           disabled={busy}
           onClick={async () => {
-            if (!window.confirm('Sair desta conta neste celular? Para voltar, é só entrar de novo pelo e-mail.')) return
+            if (!window.confirm('Sair desta conta neste celular? Para voltar, entre de novo com e-mail e senha.')) return
             setBusy(true)
             try {
               await onSignOut()

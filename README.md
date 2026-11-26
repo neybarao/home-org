@@ -19,7 +19,7 @@ Publicado em https://neybarao.github.io/home-org/ pelo GitHub Actions a cada pus
 
 ## Estado atual
 
-Os dois celulares veem a mesma lista pelo Supabase. Cada um entra com o próprio e-mail (link mágico, sem senha) e o app descobre quem é pela tabela `members`.
+Os dois celulares veem a mesma lista pelo Supabase. Cada um entra com o próprio e-mail e senha e o app descobre quem é pela tabela `members`.
 
 - O localStorage continua como cache, então o app abre e funciona sem internet. O que mudar offline sobe quando a conexão volta.
 - Cada mudança envia ao banco só as linhas que mudaram (`src/data/remote.ts`). O outro celular recebe na hora pelo Realtime.
@@ -33,15 +33,14 @@ Os arquivos ficam em `supabase/`. Passo a passo para criar:
 
 1. Em supabase.com, crie um projeto novo (plano grátis, região São Paulo).
 2. No **SQL Editor**, cole e rode `supabase/schema.sql` inteiro. Depois rode `supabase/maintenance.sql`.
-3. Em **Authentication > Sign In / Providers**, deixe o login por e-mail ligado (link mágico). Em **URL Configuration**, coloque `https://neybarao.github.io/home-org/` como Site URL.
+3. Em **Authentication > Sign In / Providers**, deixe o login por e-mail ligado e desligue **Confirm email** (o e-mail padrão do Supabase é limitado, e no iPhone o link abre no Safari, fora do app instalado). Quem protege os dados é a tabela `members`. Em **URL Configuration**, coloque `https://neybarao.github.io/home-org/` como Site URL.
 4. Em **Project Settings > API**, copie a URL do projeto e a chave **publishable** (nunca a secret) para um arquivo `.env.production` na raiz:
    ```
    VITE_SUPABASE_URL=https://SEU-PROJETO.supabase.co
    VITE_SUPABASE_KEY=sb_publishable_...
    ```
    A chave publishable foi feita para ficar no navegador; quem protege os dados é o RLS do `schema.sql`.
-5. Opcional, para o app instalado no iPhone: o link do e-mail abre no Safari, e não no app da tela inicial. Para entrar direto no app, em **Authentication > Emails > Magic Link** acrescente `{{ .Token }}` no texto do e-mail. A tela "Confira o seu e-mail" aceita esse código.
-6. Depois que cada um entrar no app pela primeira vez, libere os dois no SQL Editor (os ids estão em **Authentication > Users**):
+5. Depois que cada um criar a conta e entrar no app pela primeira vez, libere os dois no SQL Editor (os ids estão em **Authentication > Users**):
    ```sql
    insert into public.members (user_id, person) values
      ('ID-DO-NEY', 'ney'),

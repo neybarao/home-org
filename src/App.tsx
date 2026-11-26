@@ -9,7 +9,7 @@ import { haptic, withTransition } from './lib/motion'
 import { todayISO } from './lib/dates'
 import { useTheme } from './lib/theme'
 import { PEOPLE, type Person } from './lib/types'
-import { AuthErrorScreen, CheckEmailScreen, LoadingScreen, SignInScreen, WaitingScreen } from './screens/AuthScreens'
+import { AuthErrorScreen, LoadingScreen, SignInScreen, WaitingScreen } from './screens/AuthScreens'
 import { HouseScreen } from './screens/HouseScreen'
 import { ProgressScreen } from './screens/ProgressScreen'
 import { SettingsScreen } from './screens/SettingsScreen'
@@ -57,9 +57,7 @@ export default function App() {
     case 'loading':
       return <LoadingScreen />
     case 'signedOut':
-      return <SignInScreen onSend={auth.sendLink} />
-    case 'sent':
-      return <CheckEmailScreen email={state.email} onResend={auth.sendLink} onCode={auth.verifyCode} onBack={auth.restart} />
+      return <SignInScreen onSignIn={auth.signIn} onSignUp={auth.signUp} />
     case 'waiting':
       return <WaitingScreen email={state.email} onSignOut={() => void auth.signOut()} />
     case 'error':
