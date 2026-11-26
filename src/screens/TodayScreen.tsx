@@ -5,7 +5,7 @@ import { Avatar, Card, SectionTitle, Switch } from '../components/ui'
 import { actions, useHome } from '../data/store'
 import { haptic, withTransition } from '../lib/motion'
 import { WEEKDAYS, longDate, relativeDay, weekday, type ISODate } from '../lib/dates'
-import { dayView, isClosing, pickOne, suggestRedistribution, type DayItem } from '../lib/schedule'
+import { dayView, isClosing, isExtra, pickOne, suggestRedistribution, type DayItem } from '../lib/schedule'
 import { PEOPLE, type Person } from '../lib/types'
 
 /** Um sim/não que vale só para o dia de hoje neste aparelho. */
@@ -37,6 +37,10 @@ function useDailyFlag(key: string, today: ISODate): [boolean, (v: boolean) => vo
 
 let hasEntered = false
 
+type Filter = 'todas' | 'hoje' | 'extras' | 'fechamento'
+// Lembra o filtro ao trocar de aba; volta para Todas quando o app abre de novo.
+let lastFilter: Filter = 'todas'
+
 export function TodayScreen({ me, today }: { me: Person; today: ISODate }) {
   const data = useHome()
   const [entering] = useState(() => !hasEntered)
@@ -48,24 +52,37 @@ export function TodayScreen({ me, today }: { me: Person; today: ISODate }) {
   const [dismissed, setDismissed] = useDailyFlag('home-org:dismissed', today)
   const [justMoved, setJustMoved] = useState<number | null>(null)
   const [extraOpen, setExtraOpen] = useState(false)
+  const [filter, setFilterState] = useState<Filter>(lastFilter)
+  const setFilter = (f: Filter) => {
+    lastFilter = f
+    setFilterState(f)
+  }
   const extraRef = useRef<HTMLLIElement>(null)
   const openExtra = () => {
     haptic()
-    withTransition(() => setExtraOpen(true))
-    // O formulário fica no fim de "Pra hoje"; rola até ele.
+    withTransition(() => {
+      setExtraOpen(true)
+      if (filter !== 'todas' && filter !== 'extras') setFilter('todas')
+    })
+    // O formulário fica no fim de "Extras"; rola até ele.
     window.setTimeout(() => extraRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50)
   }
 
   const view = useMemo(() => dayView(data, today), [data, today])
   const suggestion = useMemo(() => suggestRedistribution(data, today, solo), [data, today, solo])
 
-  const regularToday = view.today.filter((i) => !i.task.special && !isClosing(i.task))
+  const regularToday = view.today.filter((i) => !i.task.special && !isClosing(i.task) && !isExtra(i.task))
   const special = [...view.overdue, ...view.today].filter((i) => i.task.special)
-  const overdue = view.overdue.filter((i) => !i.task.special)
+  const overdue = view.overdue.filter((i) => !i.task.special && !isExtra(i.task))
+  // Extras: as de hoje e as que ficaram pra trás, pendentes primeiro.
+  const extras = [...view.overdue, ...view.today].filter((i) => isExtra(i.task))
+  const extrasPending = extras.filter((i) => !i.occ.doneBy)
+  const extrasDone = extras.filter((i) => i.occ.doneBy)
   const closing = view.today.filter((i) => isClosing(i.task))
   const closingDone = closing.filter((i) => i.occ.doneBy).length
   const pendingToday = regularToday.filter((i) => !i.occ.doneBy)
   const doneToday = regularToday.filter((i) => i.occ.doneBy)
+  const show = (f: Exclude<Filter, 'todas'>) => filter === 'todas' || filter === f
   const nothingLeft = pendingToday.length === 0 && overdue.length === 0 && special.every((i) => i.occ.doneBy)
 
   return (
@@ -164,7 +181,20 @@ export function TodayScreen({ me, today }: { me: Person; today: ISODate }) {
         </section>
       )}
 
-      {overdue.length > 0 && (
+      <FilterBar
+        value={filter}
+        onChange={(f) => {
+          haptic()
+          withTransition(() => setFilter(f))
+        }}
+        counts={{
+          hoje: pendingToday.length + overdue.length + special.filter((i) => !i.occ.doneBy).length,
+          extras: extrasPending.length,
+          fechamento: closing.length - closingDone,
+        }}
+      />
+
+      {show('hoje') && overdue.length > 0 && (
         <TaskSection title="Ficou pra trás" count={overdue.length} tone="late" motion={enter(4)}>
           {overdue.map((i) => (
             <TaskRow key={i.occ.key} item={i} me={me} today={today} />
@@ -172,6 +202,7 @@ export function TodayScreen({ me, today }: { me: Person; today: ISODate }) {
         </TaskSection>
       )}
 
+      {show('hoje') && (
       <TaskSection title="Pra hoje" count={pendingToday.length} motion={enter(5)}>
         {pendingToday.map((i) => (
           <TaskRow key={i.occ.key} item={i} me={me} today={today} />
@@ -190,10 +221,22 @@ export function TodayScreen({ me, today }: { me: Person; today: ISODate }) {
         {doneToday.map((i) => (
           <TaskRow key={i.occ.key} item={i} me={me} today={today} />
         ))}
-        <AddExtra me={me} today={today} open={extraOpen} setOpen={setExtraOpen} innerRef={extraRef} onOpen={openExtra} />
       </TaskSection>
+      )}
 
-      {closing.length > 0 && (
+      {show('extras') && (
+        <TaskSection title="Extras" count={extrasPending.length} hint={extras.length === 0 ? 'Coisas que aparecem no dia. Ficam fora do limite.' : undefined} motion={enter(6)}>
+          {extrasPending.map((i) => (
+            <TaskRow key={i.occ.key} item={i} me={me} today={today} />
+          ))}
+          {extrasDone.map((i) => (
+            <TaskRow key={i.occ.key} item={i} me={me} today={today} />
+          ))}
+          <AddExtra me={me} today={today} open={extraOpen} setOpen={setExtraOpen} innerRef={extraRef} onOpen={openExtra} />
+        </TaskSection>
+      )}
+
+      {show('fechamento') && closing.length > 0 && (
         <TaskSection
           title="Fechamento do dia"
           count={closing.length}
@@ -218,13 +261,54 @@ export function TodayScreen({ me, today }: { me: Person; today: ISODate }) {
         </TaskSection>
       )}
 
-      {special.length > 0 && (
+      {show('hoje') && special.length > 0 && (
         <TaskSection title="Tarefa especial" hint="Leva mais tempo, fica fora do limite do dia." motion={enter(7)}>
           {special.map((i) => (
             <TaskRow key={i.occ.key} item={i} me={me} today={today} />
           ))}
         </TaskSection>
       )}
+    </div>
+  )
+}
+
+/** Filtro de Hoje: cada opção mostra quantas tarefas ainda faltam. */
+function FilterBar({
+  value,
+  onChange,
+  counts,
+}: {
+  value: Filter
+  onChange: (f: Filter) => void
+  counts: Record<Exclude<Filter, 'todas'>, number>
+}) {
+  const options: [Filter, string, number][] = [
+    ['todas', 'Todas', counts.hoje + counts.extras + counts.fechamento],
+    ['hoje', 'Pra hoje', counts.hoje],
+    ['extras', 'Extras', counts.extras],
+    ['fechamento', 'Fechamento', counts.fechamento],
+  ]
+  return (
+    <div role="tablist" aria-label="Filtrar tarefas" className="glass mt-6 grid grid-cols-4 gap-1 rounded-[22px] p-1">
+      {options.map(([f, label, n]) => {
+        const on = value === f
+        return (
+          <button
+            key={f}
+            role="tab"
+            aria-selected={on}
+            aria-label={`${label}: ${n === 1 ? '1 tarefa faltando' : `${n} tarefas faltando`}`}
+            onClick={() => !on && onChange(f)}
+            className={`pop relative flex flex-col items-center rounded-[18px] px-1 py-1.5 ${on ? 'text-ink' : 'text-muted'}`}
+          >
+            {on && (
+              <span aria-hidden className="absolute inset-0 rounded-[18px] bg-white shadow-[0_1px_3px_rgb(0_0_0/0.1)] dark:bg-white/15" style={{ viewTransitionName: 'today-filter' }} />
+            )}
+            <span className={`tabular relative text-[19px] leading-tight ${on ? 'font-semibold' : 'font-medium'}`}>{n}</span>
+            <span className={`relative truncate text-[12px] ${on ? 'font-semibold' : ''}`}>{label}</span>
+          </button>
+        )
+      })}
     </div>
   )
 }
