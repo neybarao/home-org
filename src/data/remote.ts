@@ -14,6 +14,7 @@ export interface TemplateRow {
   active: boolean
   closing: boolean
   owner: Person | null
+  note?: string | null
 }
 
 export interface OccurrenceRow {
@@ -45,6 +46,7 @@ export function templateToRow(t: TaskTemplate): TemplateRow {
     active: t.active,
     closing: t.closing ?? false,
     owner: t.owner ?? null,
+    note: t.note?.trim() || null,
   }
 }
 
@@ -60,6 +62,7 @@ export function rowToTemplate(r: TemplateRow): TaskTemplate {
   }
   if (r.closing) t.closing = true
   if (r.owner) t.owner = r.owner
+  if (r.note) t.note = r.note
   return t
 }
 

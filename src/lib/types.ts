@@ -27,6 +27,8 @@ export interface TaskTemplate {
   active: boolean
   /** Rotina da noite (só para diárias). Fica fora do limite diário. */
   closing?: boolean
+  /** Nota com mais detalhes (ex.: "usar o produto do armário de cima"). */
+  note?: string
   /** Quem cuida dessa tarefa por padrão. Sem dono, fica livre para quem pegar. */
   owner?: Person
 }

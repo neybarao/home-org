@@ -23,6 +23,7 @@ export function TaskEditor({ task, rooms, onClose }: { task: TaskTemplate | null
   const [active, setActive] = useState(task?.active ?? true)
   const [closing, setClosing] = useState(task?.closing ?? false)
   const [owner, setOwner] = useState<Person | ''>(task?.owner ?? '')
+  const [note, setNote] = useState(task?.note ?? '')
   const [error, setError] = useState<string | null>(null)
   const dialog = useRef<HTMLDialogElement>(null)
 
@@ -43,7 +44,7 @@ export function TaskEditor({ task, rooms, onClose }: { task: TaskTemplate | null
   const save = () => {
     if (!title.trim()) return setError('Dê um nome para a tarefa.')
     if (kind === 'extra') {
-      actions.addExtra(title, todayISO(), owner || undefined)
+      actions.addExtra(title, todayISO(), owner || undefined, note)
       return onClose()
     }
     if (!room.trim()) return setError('Diga em que parte da casa ela fica.')
@@ -64,6 +65,7 @@ export function TaskEditor({ task, rooms, onClose }: { task: TaskTemplate | null
       active,
       closing: kind === 'daily' && closing ? true : undefined,
       owner: owner || undefined,
+      note: note.trim() || undefined,
     })
     onClose()
   }
@@ -98,6 +100,17 @@ export function TaskEditor({ task, rooms, onClose }: { task: TaskTemplate | null
         <label className="mt-5 block">
           <span className={label}>O que fazer</span>
           <input value={title} onChange={(e) => setTitle(e.target.value)} className={field} placeholder="Ex.: Limpar o fogão" />
+        </label>
+
+        <label className="mt-4 block">
+          <span className={label}>Nota (opcional)</span>
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            rows={2}
+            className="glass mt-2 w-full resize-none rounded-[20px] px-4 py-3 text-[16px] text-ink placeholder:text-muted"
+            placeholder="Detalhes: produto, onde fica, como fazer…"
+          />
         </label>
 
         {kind !== 'extra' && (

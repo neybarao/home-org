@@ -285,10 +285,11 @@ export const actions = {
   },
 
   /** Tarefa extra: de uma vez, só para o dia, fora do planejamento. */
-  addExtra(title: string, date: string, owner?: Person) {
+  addExtra(title: string, date: string, owner?: Person, note?: string) {
     const id = `extra-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
     const t: TaskTemplate = { id, title: title.trim(), room: 'Extra', frequency: { kind: 'once', date }, priority: 'normal', special: false, active: true }
     if (owner) t.owner = owner
+    if (note?.trim()) t.note = note.trim()
     commit({ ...data, templates: [...data.templates, t] })
   },
 
