@@ -77,7 +77,7 @@ export function TodayScreen({ me, today }: { me: Person; today: ISODate }) {
         </span>
         <span className="flex items-center gap-2">
           <span className="glass-btn rounded-full px-4 py-2.5 text-[14px] font-medium">{longDate(today)}</span>
-          <button onClick={openExtra} aria-label="Adicionar tarefa extra" className="pop grid size-11 place-items-center rounded-full bg-solid text-on-solid">
+          <button onClick={openExtra} aria-label="Adicionar tarefa extra" className="pop glass-edge grid size-11 place-items-center rounded-full bg-solid text-on-solid">
             <Icon name="plus" size={20} />
           </button>
         </span>
